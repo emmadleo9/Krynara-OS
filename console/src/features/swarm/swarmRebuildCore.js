@@ -130,6 +130,7 @@
     "M4.6 3.9 C4.2 3.1 4.9 2.4 5.7 2.8 L20.6 9.4 C21.5 9.8 21.4 11.1 20.4 11.3 L13.9 12.9 C13.4 13 13 13.4 12.9 13.9 L11.3 20.4 C11.1 21.4 9.8 21.5 9.4 20.6 Z";
   const HOT = {
     arrow: [5, 3.5],
+    "shooting-star": [14, 14],
     dup: [5, 3.5],
     pen: [3, 3],
     "pen-add": [3, 3],
@@ -140,8 +141,35 @@
     ns: [12, 12],
   };
 
-  function cursorSVG(shape, c) {
+  function cursorSVG(shape, c, theme = "default") {
     const st = 'stroke="#fff" stroke-width="1.5" stroke-linejoin="round"';
+    if (shape === "arrow" && theme === "shooting-stars") {
+      // 4-point crystalline prism star inspired by the celestial shooting star design
+      return `
+        <defs>
+          <filter id="c-glow-${Math.abs(c.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0))}" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+        <!-- Outer crystalline facet lattice -->
+        <polygon points="14,2 26,14 14,26 2,14" fill="none" stroke="${c}" stroke-width="0.8" opacity="0.65" />
+        <!-- Inner facets for gemstone 3D sheen -->
+        <polygon points="14,2 14,14 2,14" fill="#ffffff" opacity="0.9" />
+        <polygon points="14,2 26,14 14,14" fill="${c}" opacity="0.75" />
+        <polygon points="14,14 26,14 14,26" fill="#ffffff" opacity="0.85" />
+        <polygon points="2,14 14,14 14,26" fill="${c}" opacity="0.95" />
+        <!-- Center star core highlight & sparkle points -->
+        <circle cx="14" cy="14" r="2.2" fill="#ffffff" />
+        <line x1="14" y1="2" x2="14" y2="26" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" />
+        <line x1="2" y1="14" x2="26" y2="14" stroke="#ffffff" stroke-width="1.2" stroke-linecap="round" />
+        <!-- Corner sparkle stars -->
+        <circle cx="14" cy="2" r="1.2" fill="#ffffff" />
+        <circle cx="26" cy="14" r="1.2" fill="#ffffff" />
+        <circle cx="14" cy="26" r="1.2" fill="#ffffff" />
+        <circle cx="2" cy="14" r="1.2" fill="#ffffff" />
+      `;
+    }
     switch (shape) {
       case "arrow":
         return `<path d="${ARROW_D}" fill="${c}" ${st}/>`;
@@ -1683,6 +1711,7 @@
 <div class="intro"></div>
 <svg class="ov"></svg>
 <div class="badges"></div>
+<svg class="trails" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;"></svg>
 <div class="cursors"></div>
 <div class="rulers"></div>
 <div class="hud">
@@ -1705,6 +1734,7 @@
       this.intro = $(".intro");
       this.ov = $(".ov");
       this.badges = $(".badges");
+      this.trailsEl = $(".trails");
       this.cursorsEl = $(".cursors");
       this.rulers = $(".rulers");
       this.hud = $(".hud");
@@ -1975,10 +2005,12 @@
         el.style.opacity = String(f1(op));
         const svg = el.firstChild;
         const tag = el.lastChild;
-        if (el._shape !== c.shape) {
-          svg.innerHTML = cursorSVG(c.shape, c.color);
-          el._shape = c.shape;
-          const [hx, hy] = HOT[c.shape];
+        const arrowTheme = E.cfg?.arrowHeadTheme || "default";
+        const shapeKey = c.shape + ":" + arrowTheme + ":" + c.color;
+        if (el._shape !== shapeKey) {
+          svg.innerHTML = cursorSVG(c.shape, c.color, arrowTheme);
+          el._shape = shapeKey;
+          const [hx, hy] = (c.shape === "arrow" && arrowTheme === "shooting-stars") ? HOT["shooting-star"] : (HOT[c.shape] || [5, 3.5]);
           el._hx = hx;
           el._hy = hy;
           svg.style.transformOrigin = `${hx}px ${hy}px`;
@@ -2005,6 +2037,36 @@
         const curScale = (c.scale != null ? c.scale : 1) * baseScale;
         const s = (1 - c.press * 0.12) * curScale;
         svg.style.transform = `translate(${-el._hx}px,${-el._hy}px) rotate(${f1(c.angle)}deg) scale(${f1(s)})`;
+
+        // Update shooting-stars trailing comet particle trail
+        if (arrowTheme === "shooting-stars" && op > 0.05) {
+          if (!c.trail) c.trail = [];
+          c.trail.unshift({ x: X, y: Y, op: 1 });
+          if (c.trail.length > 7) c.trail.pop();
+        } else if (c.trail) {
+          c.trail.length = 0;
+        }
+      }
+
+      // Render shooting-stars comet trail SVG
+      if (this.trailsEl) {
+        let trailsSvg = "";
+        for (const c of E.cursors) {
+          if (c.trail && c.trail.length > 1) {
+            for (let i = 1; i < c.trail.length; i++) {
+              const p1 = c.trail[i - 1];
+              const p2 = c.trail[i];
+              const trailAlpha = ((c.trail.length - i) / c.trail.length) * 0.7 * (c.opacity != null ? c.opacity : 1);
+              const strokeW = Math.max(0.6, (c.trail.length - i) * 0.65);
+              trailsSvg += `<line x1="${f1(p1.x)}" y1="${f1(p1.y)}" x2="${f1(p2.x)}" y2="${f1(p2.y)}" stroke="${c.color}" stroke-width="${strokeW}" stroke-linecap="round" opacity="${f1(trailAlpha)}"/>`;
+              if (i % 2 === 0) {
+                // Sparkle stardust fleck
+                trailsSvg += `<circle cx="${f1(p2.x)}" cy="${f1(p2.y)}" r="${f1(strokeW * 0.7)}" fill="#ffffff" opacity="${f1(trailAlpha * 0.9)}"/>`;
+              }
+            }
+          }
+        }
+        this.trailsEl.innerHTML = trailsSvg;
       }
       for (const [id, el] of this.cursorEls)
         if (!seen.has(id)) {
@@ -2422,11 +2484,13 @@
         this.departTime += dt;
         const t = this.departTime;
         const midTime = 0.45;
-        const vanishTime = 1.15;
+        const spinTime = 0.90;
+        const vanishTime = 1.60;
         const center = this.fromViewport(vp.ox + vp.vw * 0.5, vp.oy + vp.vh * 0.45);
         const topRight = this.fromViewport(vp.ox + vp.vw + 70, vp.oy - 70);
 
         if (t <= midTime) {
+          // Phase 1: Converge to center
           const k = easeInOut(t / midTime);
           for (const c of this.cursors) {
             const spreadX = ((c.id % 6) - 2.5) * 26;
@@ -2435,22 +2499,40 @@
             const targetY = center.y + spreadY;
             c.x = c.startExitX + (targetX - c.startExitX) * k;
             c.y = c.startExitY + (targetY - c.startExitY) * k;
-            c.angle = -45;
+            c.angle = 0;
+            c.opacity = 1;
+            c.scale = 1;
+          }
+        } else if (t <= spinTime) {
+          // Phase 2: Arrows spin in a circle formation around center, then lock alignment facing top-right (-45 deg)
+          const spinProgress = (t - midTime) / (spinTime - midTime);
+          const spinEase = easeInOut(spinProgress);
+          const baseOrbitRadius = 38;
+          for (let i = 0; i < this.cursors.length; i++) {
+            const c = this.cursors[i];
+            const startAngle = (i / this.cursors.length) * 2 * Math.PI;
+            // 360 degree full circular orbit
+            const currentOrbitAngle = startAngle + spinEase * 2 * Math.PI;
+            c.x = center.x + Math.cos(currentOrbitAngle) * baseOrbitRadius;
+            c.y = center.y + Math.sin(currentOrbitAngle) * (baseOrbitRadius * 0.7);
+            // Spin rotation on own axis, ending precisely aligned pointing top-right (-45°)
+            c.angle = spinEase * 360 - 45;
             c.opacity = 1;
             c.scale = 1;
           }
         } else if (t <= vanishTime) {
-          const k = easeOut((t - midTime) / (vanishTime - midTime));
+          // Phase 3: Face top-right direction and dash to top-right corner to leave screen & vanish
+          const k = easeOut((t - spinTime) / (vanishTime - spinTime));
           for (const c of this.cursors) {
-            const spreadX = ((c.id % 6) - 2.5) * 26;
-            const spreadY = (Math.floor(c.id / 6) - 1.5) * 20;
+            const spreadX = ((c.id % 6) - 2.5) * 20;
+            const spreadY = (Math.floor(c.id / 6) - 1.5) * 16;
             const startX = center.x + spreadX;
             const startY = center.y + spreadY;
             const targetX = topRight.x + spreadX * 0.4;
             const targetY = topRight.y + spreadY * 0.4;
             c.x = startX + (targetX - startX) * k;
             c.y = startY + (targetY - startY) * k;
-            c.angle = -45;
+            c.angle = -45; // Pointing straight toward top-right corner
             c.opacity = clamp(1 - Math.pow(k, 1.8), 0, 1);
             c.scale = clamp(1 - k * 0.85, 0.05, 1);
           }
@@ -4070,14 +4152,20 @@
         if (patch.soundEnabled !== undefined && app.sfx) {
           app.sfx.setOn(patch.soundEnabled);
         }
-        if (patch.colorTheme !== undefined) {
-          const palette = THEMES[patch.colorTheme] || THEMES.cyan;
+        if (patch.colorTheme !== undefined || patch.arrowHeadTheme !== undefined) {
+          const curTheme = patch.arrowHeadTheme !== undefined ? patch.arrowHeadTheme : (globalConfig.arrowHeadTheme || "default");
+          const palette = THEMES[globalConfig.colorTheme] || THEMES.cyan;
           for (const c of app.engine.cursors) {
             c.color = palette[c.id % palette.length];
             const el = app.view.cursorEls.get(c.id);
             if (el) {
               const svg = el.firstChild;
-              svg.innerHTML = cursorSVG(c.shape, c.color);
+              svg.innerHTML = cursorSVG(c.shape, c.color, curTheme);
+              el._shape = c.shape + ":" + curTheme + ":" + c.color;
+              const [hx, hy] = (c.shape === "arrow" && curTheme === "shooting-stars") ? HOT["shooting-star"] : (HOT[c.shape] || [5, 3.5]);
+              el._hx = hx;
+              el._hy = hy;
+              svg.style.transformOrigin = `${hx}px ${hy}px`;
               const tag = el.lastChild;
               if (tag) tag.style.backgroundColor = c.color;
             }

@@ -35,6 +35,7 @@ Krynara-OS is a **local-first AI operating system** that turns a modest machine 
 | 🖥️ **Console (KRYNARA)** | Dark OLED HUD (`#050A0E` / cyan `#8AF8FF`), glassmasonry panels, animated tactical UI. System Monitor v4.0.1.16. |
 | 🌍 **World View** | Searchable 2D / 3D / satellite map with saved layers, GeoJSON drawing/export, OSRM driving directions, terrain relief, public GTFS-RT transit in supported regions, Open-Meteo wind vectors, NOAA satellite cloud and water-vapor imagery, RainViewer radar frames, solar day/night shading, 3D buildings, and live ADS-B, USGS, satellite, NASA fire, GDELT, weather and NOAA weather-alert overlays. |
 | 💬 **Social Hub** | **KRYNARA WhatsApp** embedded — scan a QR, chat in the HUD. Plus Telegram / Instagram / Discord connectors. |
+| 🏹 **Swarm Cursor Engine** | **Joel Califa-inspired multiplayer fleet & "Shooting Stars Swarm"**: Arrow agents dynamically fly in from the top-right, construct DOM components with procedural E-pentatonic glass audio, spin in a circular orbit, lock vectors to top-right, and vanish. Features real-time 0.7s component activation, color themes (Cyan, Matrix, Amber, Multi, Monochrome), and custom stardust trails. |
 | 🗞️ **News & Conflict** | GDELT global events with country search, recommendations and a live mini-map. |
 | 🔋 **Memory** | Persistent everywhere — IndexedDB in the console, SQLite in the gateway. Sessions survive restarts. |
 | ✈️ **Offline-first** | Feeds degrade gracefully; the console keeps running without internet. |
@@ -48,6 +49,14 @@ Direct WhatsApp voice/video calling and Status-story creation are not exposed by
 ### AI Studio
 
 AI Studio keeps its local Ollama models available and adds optional NVIDIA NIM, Groq, and OpenRouter chat models. The **FREE-SEARCH // TAVILY + LLAMA - Perplexity Clone 🌐 FREE** option searches Tavily and summarizes results with NVIDIA. Add keys through **AI Studio → API KEYS** or configure server-side variables in the repository-root `.env.local`, `.env`, or `gateway/.env.local`: `NVIDIA_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, and `TAVILY_API_KEY`. Use [.env.local.example](./.env.local.example) as the template for a root `.env.local`. Browser-entered keys stay in that browser's local storage and provider requests go through the local gateway. Do not use `VITE_`-prefixed provider secrets because Vite embeds those values in browser bundles. If NVIDIA's account inference route is unavailable, AI Studio falls back to local Ollama; Tavily search still returns the retrieved answer or source text.
+
+### 🏹 Swarm Rebuild Engine (v4.0.1.16)
+
+Krynara-OS incorporates a high-performance **Multiplayer Rebuild Swarm** inspired by Joel Califa's cursor experiments, fully wired across all console components and views:
+- **Shooting Stars Swarm & Crystal Star Head**: Features a 4-point faceted crystalline star geometry with trailing stardust comet trails (`--swarm-theme-chip`) adapting to all color palettes (Cyan OLED, Matrix Emerald, Amber Intel, Multi Rainbow, and Monochrome).
+- **Synchronized 0.7s System Startup**: Automatically blends real UI telemetry and readings with construction so there is zero dead lag (`krynara-swarm-building` and `krynara-swarm-departing`).
+- **Circular Orbit Departure Choreography**: On build completion, arrow agents gather at the center, execute a 360° circular orbit formation, lock their trajectory vector pointing top-right (-45°), and dash out to vanish.
+- **Full Automation & Accessibility**: Triggered on route change (`autoNav`), viewport scroll (`autoScroll`), or tap (`autoTouch`) with click-through accessibility (`pointer-events: none !important`) so all HUD controls remain clickable. Manageable through **Settings → Swarm Rebuild Engine Matrix**.
 
 ---
 

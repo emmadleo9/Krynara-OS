@@ -257,9 +257,24 @@ export function SwarmSettingsPanel() {
           <div className="swarm-control-box">
             <div className="swarm-control-head">
               <span>ARROW SCALE & AESTHETICS</span>
-              <span>{config.arrowScale}× SCALE</span>
+              <span>{config.arrowHeadTheme === 'shooting-stars' ? 'SHOOTING STARS SWARM' : 'DEFAULT FLEET'}</span>
             </div>
             <div className="swarm-button-group">
+              <button
+                type="button"
+                className={`swarm-btn${config.arrowHeadTheme === 'shooting-stars' ? ' active' : ''}`}
+                style={{ borderColor: 'var(--krynara-cyan)', color: config.arrowHeadTheme === 'shooting-stars' ? '#050a0e' : 'var(--krynara-cyan)' }}
+                onClick={() => updateSetting('arrowHeadTheme', config.arrowHeadTheme === 'shooting-stars' ? 'default' : 'shooting-stars')}
+              >
+                ✦ SHOOTING STARS SWARM: {config.arrowHeadTheme === 'shooting-stars' ? 'ON' : 'OFF'}
+              </button>
+              <button
+                type="button"
+                className={`swarm-btn${config.arrowHeadTheme === 'default' ? ' active' : ''}`}
+                onClick={() => updateSetting('arrowHeadTheme', 'default')}
+              >
+                DEFAULT ARROWS
+              </button>
               {[
                 { scale: 0.8, label: '0.8× COMPACT' },
                 { scale: 1.0, label: '1.0× STANDARD' },
