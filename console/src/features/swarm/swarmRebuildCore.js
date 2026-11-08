@@ -2549,6 +2549,20 @@
             c.task.state = "done";
             c.task.doneAt = this.time;
             this.doneCount++;
+            // Dispatch per-item-built event — 0.7s delay hint for page systems to sync up
+            const total = this.tasks.length;
+            const done = this.doneCount;
+            const pct = total ? done / total : 1;
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("krynara:swarm:item-built", {
+                detail: { done, total, pct }
+              }));
+              // Progressively reveal real page content — set a CSS custom property
+              // so CSS transitions start showing real elements in sync with the build
+              document.documentElement.style.setProperty(
+                "--swarm-build-pct", String(Math.round(pct * 100))
+              );
+            }
             c.task = null;
             c.ov = null;
             if (c.sticky) {
@@ -3662,6 +3676,9 @@
       this.engine.onStart = () => this.view.intro && this.view.intro.classList.add("gone");
       this.engine.onComplete = () => this.onComplete();
       this.engine.onVanishComplete = () => this.onVanishComplete();
+      // Mark body so global CSS knows swarm is building
+      document.body.classList.add("krynara-swarm-building");
+      document.body.classList.remove("krynara-swarm-departing");
       this.bind();
       this.last = performance.now();
       this.raf = requestAnimationFrame((t) => this.frame(t));
