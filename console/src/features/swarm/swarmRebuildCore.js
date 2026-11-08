@@ -3887,6 +3887,14 @@
       v.root.querySelector('[data-a="tour"]').hidden = true;
       v.root.querySelector('[data-a="speed"]').hidden = true;
       this.tour = false;
+      // Switch body class: building -> departing
+      // Triggers CSS staggered reveal of real page content with 0.7s sync
+      // so the system starts working in sync with the arrows' departure animation
+      if (typeof document !== "undefined") {
+        document.body.classList.remove("krynara-swarm-building");
+        document.body.classList.add("krynara-swarm-departing");
+        document.documentElement.style.setProperty("--swarm-build-pct", "100");
+      }
       if (typeof window !== "undefined") {
         window.dispatchEvent(
           new CustomEvent("krynara:swarm:telemetry", {
@@ -3924,6 +3932,10 @@
           if (this.view && this.view.host) {
             this.view.host.remove();
           }
+          if (typeof document !== "undefined") {
+            document.body.classList.remove("krynara-swarm-building");
+            document.body.classList.remove("krynara-swarm-departing");
+          }
           if (app === this) app = null;
         }
       }, 260);
@@ -3940,6 +3952,10 @@
         cancelAnimationFrame(this.raf);
         for (const u of this.unbinds || []) u();
         this.view.host.remove();
+        if (typeof document !== "undefined") {
+          document.body.classList.remove("krynara-swarm-building");
+          document.body.classList.remove("krynara-swarm-departing");
+        }
       };
       if (reveal) {
         this.engine.releasing = true;
