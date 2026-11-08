@@ -91,7 +91,7 @@ function Shell({ children }: { children: ReactNode }) {
         <div className="krynara-brand">
           <img className="krynara-brand-logo" src="/krynara-official.png" alt="Krynara-OS official shield logo" />
           <span>Krynara-OS</span>
-          <small>PUBLIC DATA CONSOLE // 04.0</small>
+          <small>PUBLIC DATA CONSOLE // 04.0.1.16</small>
         </div>
         <nav className="krynara-nav" aria-label="Main navigation">
           {links.map(([to, icon, label]) => (
@@ -109,7 +109,7 @@ function Shell({ children }: { children: ReactNode }) {
       <main className="krynara-main">
         <header className="krynara-topline">
           <div>
-            <div className="krynara-kicker">SYSTEM MONITOR v4.0 // Krynara-OS ONLINE</div>
+            <div className="krynara-kicker">SYSTEM MONITOR v4.0.1.16 // Krynara-OS ONLINE</div>
             <h1 className="krynara-heading">{titles[pathname] ?? 'KRYNARA CONSOLE'}</h1>
           </div>
           <div className="krynara-clock">

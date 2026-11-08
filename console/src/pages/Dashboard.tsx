@@ -24,7 +24,7 @@ export function Dashboard() {
     }}>
       {/* Left Column - Status Cards + GPU Gauge */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-        <HudFrame title="SYSTEM MONITOR // v3.2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <HudFrame title="SYSTEM MONITOR // v4.0.1.16" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <StatusCard 
             label="SYS STATUS" 
             value="ONLINE" 

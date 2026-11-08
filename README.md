@@ -15,7 +15,7 @@
   <img src="https://img.shields.io/badge/gateway-OpenWA-546E7A?style=for-the-badge" alt="Gateway: OpenWA" />
   <img src="https://img.shields.io/badge/console-KRYNARA-212121?style=for-the-badge" alt="Console: KRYNARA" />
   <img src="https://img.shields.io/badge/model-qwen2.5:3b-AA00FF?style=for-the-badge" alt="Model: qwen2.5:3b" />
-  <img src="https://img.shields.io/badge/hud-v4.0-8AF8FF?style=for-the-badge" alt="HUD: v4.0" />
+  <img src="https://img.shields.io/badge/hud-v4.0.1.16-8AF8FF?style=for-the-badge" alt="HUD: v4.0.1.16" />
   <img src="https://img.shields.io/badge/offline--first-212121?style=for-the-badge" alt="Offline-first" />
   <img src="https://img.shields.io/badge/status-ONLINE-00C853?style=for-the-badge" alt="Status: ONLINE" />
 </p>
@@ -32,7 +32,7 @@ Krynara-OS is a **local-first AI operating system** that turns a modest machine 
 |-----------|---------------|
 | 🧠 **Core (OpenJarvis)** | Local AI framework with 5 primitives — Intelligence, Engine, Agents, Tools, Memory. Serves a local LLM (`qwen2.5:3b` via Ollama). |
 | 📡 **Gateway (OpenWA)** | WhatsApp API gateway — REST API + dashboard, multi-session, SQLite mode, QR pairing, local telemetry and feed proxies. |
-| 🖥️ **Console (KRYNARA)** | Dark OLED HUD (`#050A0E` / cyan `#8AF8FF`), glassmasonry panels, animated tactical UI. System Monitor v4.0. |
+| 🖥️ **Console (KRYNARA)** | Dark OLED HUD (`#050A0E` / cyan `#8AF8FF`), glassmasonry panels, animated tactical UI. System Monitor v4.0.1.16. |
 | 🌍 **World View** | Searchable 2D / 3D / satellite map with saved layers, GeoJSON drawing/export, OSRM driving directions, terrain relief, public GTFS-RT transit in supported regions, Open-Meteo wind vectors, NOAA satellite cloud and water-vapor imagery, RainViewer radar frames, solar day/night shading, 3D buildings, and live ADS-B, USGS, satellite, NASA fire, GDELT, weather and NOAA weather-alert overlays. |
 | 💬 **Social Hub** | **KRYNARA WhatsApp** embedded — scan a QR, chat in the HUD. Plus Telegram / Instagram / Discord connectors. |
 | 🗞️ **News & Conflict** | GDELT global events with country search, recommendations and a live mini-map. |

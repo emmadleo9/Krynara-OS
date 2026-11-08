@@ -1479,72 +1479,69 @@
   // ------------------------------------------------------------------ styles
 
   const STYLE = `
-:host{all:initial}
+:host{all:initial;pointer-events:none !important}
 *{box-sizing:border-box}
-.bg{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}
-.bg.on{opacity:1}
-.layer,.port{position:absolute;overflow:hidden;pointer-events:none}
+.bg{position:absolute;inset:0;opacity:0;pointer-events:none !important;transition:opacity .35s ease}
+.bg.on{opacity:0.12;pointer-events:none !important}
+.layer,.port{position:absolute;overflow:hidden;pointer-events:none !important}
 .layer{inset:0}
-.world{position:absolute;left:0;top:0;will-change:transform}
-.it{position:absolute;left:0;top:0;transform-origin:0 0}
+.world{position:absolute;left:0;top:0;will-change:transform;pointer-events:none !important}
+.it{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none !important}
 .it.settle{transition:transform .3s cubic-bezier(.2,.8,.2,1)}
-.r{background-color:var(--ph,#D9D9D9);transition:background-color .22s ease,border-radius .22s ease}
-.r.st{background-color:transparent}
-.r>.f{position:absolute;inset:0;opacity:0;transition:opacity .22s ease,background-color .35s ease,border-radius .35s ease,box-shadow .35s ease,border-color .35s ease}
+.r{background-color:rgba(138,248,255,0.06);border:1px dashed rgba(138,248,255,0.3);transition:background-color .22s ease,border-radius .22s ease;pointer-events:none !important}
+.r.st{background-color:transparent;border-color:transparent}
+.r>.f{position:absolute;inset:0;opacity:0;transition:opacity .22s ease,background-color .35s ease,border-radius .35s ease,box-shadow .35s ease,border-color .35s ease;pointer-events:none !important}
 .r.st>.f{opacity:1}
-.m{background-color:var(--ph,#D9D9D9);overflow:hidden}
-.m>.ph{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);opacity:.7;transition:opacity .2s}
-.m>.md{position:absolute;inset:0;width:100%;height:100%;opacity:0;clip-path:inset(0 0 100% 0);transition:opacity .35s ease,clip-path .6s cubic-bezier(.2,.75,.2,1)}
+.m{background-color:rgba(138,248,255,0.05);overflow:hidden;pointer-events:none !important}
+.m>.ph{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);opacity:.7;transition:opacity .2s;pointer-events:none !important}
+.m>.md{position:absolute;inset:0;width:100%;height:100%;opacity:0;clip-path:inset(0 0 100% 0);transition:opacity .35s ease,clip-path .6s cubic-bezier(.2,.75,.2,1);pointer-events:none !important}
 .m.st{background-color:transparent;transition:background-color .3s ease .3s}
 .m.st>.ph{opacity:0}
 .m.st>.md{opacity:1;clip-path:inset(0 0 0 0)}
 .m>.md.swap{animation:swap .45s ease}
 @keyframes swap{from{opacity:0;filter:blur(6px)}}
-.m>.fr{position:absolute;inset:0;pointer-events:none}
-.l svg{position:absolute;left:0;top:0;overflow:visible}
-.bd{position:absolute;opacity:0;-webkit-backdrop-filter:saturate(180%) blur(14px);backdrop-filter:saturate(180%) blur(14px);box-shadow:0 1px 0 rgba(0,0,0,.06);pointer-events:none}
-.caret{display:inline-block;width:1.5px;height:1.1em;margin-left:1px;margin-right:-2.5px;vertical-align:text-bottom;background:currentColor;animation:blink 1s steps(1) infinite}
+.m>.fr{position:absolute;inset:0;pointer-events:none !important}
+.l svg{position:absolute;left:0;top:0;overflow:visible;pointer-events:none !important}
+.bd{position:absolute;opacity:0;pointer-events:none !important}
+.caret{display:inline-block;width:1.5px;height:1.1em;margin-left:1px;margin-right:-2.5px;vertical-align:text-bottom;background:currentColor;animation:blink 1s steps(1) infinite;pointer-events:none !important}
 @keyframes blink{50%{opacity:0}}
-.sa{background-color:rgba(13,153,255,.28)!important}
-.ov{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.badges,.cursors{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.badge{position:absolute;transform:translate(-50%);padding:1px 4px;border-radius:2px;color:#fff;font:600 11px/16px Inter,system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums}
-.cursor{position:absolute;left:0;top:0;will-change:transform}
-.cursor svg{position:absolute;overflow:visible;filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.28))}
-.rulers{position:absolute;inset:0;pointer-events:none}
-.ruler{position:absolute;background:#2c2c2c;pointer-events:none}
-.ruler svg{display:block}
-.ruler-top{top:0;left:0;right:0;height:20px;border-bottom:1px solid #3a3a3a}
-.ruler-left{top:0;left:0;bottom:0;width:20px;border-right:1px solid #3a3a3a}
-.ruler-corner{position:absolute;top:0;left:0;width:20px;height:20px;background:#2c2c2c}
-.rtext{font:500 9px Inter,system-ui,-apple-system,sans-serif;fill:#8c8c8c}
+.sa{background-color:rgba(13,153,255,.28)!important;pointer-events:none !important}
+.ov{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none !important}
+.badges,.cursors{position:absolute;inset:0;pointer-events:none !important;overflow:hidden}
+.badge{position:absolute;transform:translate(-50%);padding:1px 4px;border-radius:2px;color:#fff;font:600 11px/16px Inter,system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap;font-variant-numeric:tabular-nums;pointer-events:none !important}
+.cursor{position:absolute;left:0;top:0;will-change:transform;pointer-events:none !important;display:flex;align-items:flex-start}
+.cursor svg{position:absolute;overflow:visible;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6));pointer-events:none !important}
+.cursor .tag{position:absolute;left:18px;top:14px;padding:1px 6px;border-radius:3px;color:#050a0e;font:700 9px/14px 'Share Tech Mono',Inter,system-ui,sans-serif;white-space:nowrap;pointer-events:none !important;box-shadow:0 2px 6px rgba(0,0,0,.5);letter-spacing:0.5px;transition:opacity .2s ease}
+.rulers{position:absolute;inset:0;pointer-events:none !important}
+.ruler{position:absolute;background:#14171a;pointer-events:none !important}
+.ruler svg{display:block;pointer-events:none !important}
+.ruler-top{top:0;left:0;right:0;height:20px;border-bottom:1px solid #23282e;pointer-events:none !important}
+.ruler-left{top:0;left:0;bottom:0;width:20px;border-right:1px solid #23282e;pointer-events:none !important}
+.ruler-corner{position:absolute;top:0;left:0;width:20px;height:20px;background:#14171a;pointer-events:none !important}
+.rtext{font:500 9px 'Share Tech Mono',Inter,system-ui,-apple-system,sans-serif;fill:#6b7280;pointer-events:none !important}
 .rsel{fill:#0d99ff}
-.intro{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);opacity:0;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1);pointer-events:none}
-.intro.on{opacity:1;transform:translate(-50%,-50%)}
-.intro.gone{opacity:0;transform:translate(-50%,-50%) scale(.9)}
-.intro img{display:block;width:60px;height:60px;object-fit:contain;filter:grayscale(1);opacity:.42;border-radius:14px}
-.intro .mono{width:60px;height:60px;border-radius:16px;background:#D7DADE;color:#fff;font:700 30px/60px Inter,system-ui,sans-serif;text-align:center}
+.intro{display:none!important}
 :host([data-hide-hud="true"]) .hud{display:none!important}
-.hud{position:absolute;left:50%;bottom:20px;transform:translate(-50%,18px);opacity:0;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 10px;background:rgba(30,30,30,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.28),inset 0 0 0 1px rgba(255,255,255,.07);font:500 12px/1 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;pointer-events:auto;transition:opacity .45s ease,transform .45s cubic-bezier(.2,.8,.2,1);white-space:nowrap;user-select:none;z-index:5}
+.hud{position:absolute;left:50%;bottom:20px;transform:translate(-50%,18px);opacity:0;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 10px;background:rgba(5,10,14,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:#8af8ff;border-radius:10px;border:1px solid rgba(138,248,255,.3);box-shadow:0 8px 32px rgba(0,0,0,.6),inset 0 0 0 1px rgba(138,248,255,.1);font:500 12px/1 'Share Tech Mono',Inter,system-ui,sans-serif;pointer-events:auto;transition:opacity .35s ease,transform .35s cubic-bezier(.2,.8,.2,1);white-space:nowrap;user-select:none;z-index:99999}
 .hud.on{opacity:1;transform:translate(-50%,0)}
 .hud .dots{display:flex;padding-left:5px}
-.hud .dots i{display:block;width:18px;height:18px;margin-left:-5px;border-radius:50%;border:2px solid #1e1e1e;font:700 9px/14px Inter,system-ui,sans-serif;font-style:normal;text-align:center;color:#fff;transition:background .3s}
-.hud .txt,.hud .status{display:flex;align-items:center;gap:7px;color:#cfcfcf;font-variant-numeric:tabular-nums}
+.hud .dots i{display:block;width:18px;height:18px;margin-left:-5px;border-radius:50%;border:2px solid #050a0e;font:700 9px/14px 'Share Tech Mono',Inter,system-ui,sans-serif;font-style:normal;text-align:center;color:#050a0e;transition:background .3s}
+.hud .txt,.hud .status{display:flex;align-items:center;gap:7px;color:#8af8ff;font-variant-numeric:tabular-nums}
 .hud .txt b{color:#fff;font-weight:600}
-.hud .sep{width:1px;height:12px;background:#444}
-.hud .bar{width:64px;height:3px;border-radius:2px;background:#3a3a3a;overflow:hidden}
-.hud .bar i{display:block;height:100%;width:0;background:#0D99FF;transition:width .35s ease}
-.hud button{all:unset;cursor:pointer;padding:7px 10px;border-radius:8px;background:#2c2c2c;color:#fff;font:500 12px/1 Inter,system-ui,-apple-system,sans-serif;transition:background .15s}
-.hud button:hover{background:#3a3a3a}
-.hud button.pri{background:#0D99FF}
-.hud button.pri:hover{background:#2aa6ff}
-.hud button.on{background:rgba(13,153,255,.22);color:#8fd0ff}
+.hud .sep{width:1px;height:12px;background:rgba(138,248,255,.2)}
+.hud .bar{width:64px;height:3px;border-radius:2px;background:#14171a;overflow:hidden}
+.hud .bar i{display:block;height:100%;width:0;background:#8af8ff;transition:width .35s ease}
+.hud button{all:unset;cursor:pointer;padding:7px 10px;border-radius:6px;background:rgba(138,248,255,.08);border:1px solid rgba(138,248,255,.2);color:#8af8ff;font:500 11px/1 'Share Tech Mono',Inter,system-ui,sans-serif;transition:background .15s}
+.hud button:hover{background:rgba(138,248,255,.18);border-color:#8af8ff}
+.hud button.pri{background:#8af8ff;color:#050a0e;font-weight:700}
+.hud button.pri:hover{background:#bafaff}
+.hud button.on{background:rgba(138,248,255,.25);color:#8af8ff;border-color:#8af8ff}
 .hud button[hidden]{display:none}
-.hud .x{padding:7px 9px;color:#aaa}
+.hud .x{padding:7px 9px;color:#8af8ff}
 .hud button.snd{display:flex;align-items:center;gap:6px;padding:6px 8px}
-.hud button.snd.off{color:#8a8a8a}
-.hud button.snd.tap{background:#0D99FF;animation:hudpulse 1.6s ease-in-out infinite}
-@keyframes hudpulse{50%{box-shadow:0 0 0 4px rgba(13,153,255,.28)}}
+.hud button.snd.off{color:#4b5563}
+.hud button.snd.tap{background:#8af8ff;color:#050a0e;animation:hudpulse 1.6s ease-in-out infinite}
+@keyframes hudpulse{50%{box-shadow:0 0 0 4px rgba(138,248,255,.35)}}
 `;
 
   // -------------------------------------------------------------------- env
@@ -1625,7 +1622,7 @@
       for (const old of document.querySelectorAll("swarm-rebuild")) old.remove();
       const host = document.createElement("swarm-rebuild");
       host.style.cssText =
-        "all:initial !important;position:fixed !important;inset:0 !important;z-index:2147483647 !important;display:block !important;pointer-events:auto !important;contain:strict !important;opacity:1;transition:opacity .6s ease;";
+        "all:initial !important;position:fixed !important;inset:0 !important;z-index:2147483647 !important;display:block !important;pointer-events:none !important;contain:strict !important;opacity:1;transition:opacity .35s ease;";
       env.host = host;
       this.host = host;
       const root = host.attachShadow({ mode: "open" });
@@ -1917,7 +1914,7 @@
         if (!el) {
           el = document.createElement("div");
           el.className = "cursor";
-          el.innerHTML = '<svg width="28" height="28" viewBox="0 0 28 28"></svg>';
+          el.innerHTML = '<svg width="28" height="28" viewBox="0 0 28 28"></svg><span class="tag"></span>';
           this.cursorsEl.appendChild(el);
           this.cursorEls.set(c.id, el);
           el._shape = "";
@@ -1926,7 +1923,10 @@
         const X = c.sticky ? c.x : c.x - vp.sx + vp.ox;
         const Y = c.sticky ? c.y : c.y - vp.sy + vp.oy;
         el.style.transform = `translate(${f1(X)}px,${f1(Y)}px)`;
+        const op = c.opacity != null ? c.opacity : 1;
+        el.style.opacity = String(f1(op));
         const svg = el.firstChild;
+        const tag = el.lastChild;
         if (el._shape !== c.shape) {
           svg.innerHTML = cursorSVG(c.shape, c.color);
           el._shape = c.shape;
@@ -1935,8 +1935,17 @@
           el._hy = hy;
           svg.style.transformOrigin = `${hx}px ${hy}px`;
         }
-        const s = 1 - c.press * 0.12;
-        svg.style.transform = `translate(${-el._hx}px,${-el._hy}px) rotate(${f1(c.angle)}deg) scale(${s})`;
+        if (tag && tag.textContent !== c.name) {
+          tag.textContent = c.name;
+          tag.style.backgroundColor = c.color;
+        }
+        if (tag) {
+          const hideTag = (c.shape === "arrow" && (E.departing || E.entering || c.departing)) || op < 0.6;
+          tag.style.opacity = hideTag ? "0" : (c.press > 0 ? "0.6" : "1");
+        }
+        const curScale = c.scale != null ? c.scale : 1;
+        const s = (1 - c.press * 0.12) * curScale;
+        svg.style.transform = `translate(${-el._hx}px,${-el._hy}px) rotate(${f1(c.angle)}deg) scale(${f1(s)})`;
       }
       for (const [id, el] of this.cursorEls)
         if (!seen.has(id)) {
@@ -2105,13 +2114,18 @@
       this.frontier = 0;
       this.vel = 0;
       this.tempo = 1;
-      this.speed = 1;
+      this.speed = 2.2;
       this.time = 0;
       this.rulers = { want: 0, t: 0, lastNeed: -10 };
       this.lastScroll = null;
       this.nextId = 0;
       this.spawnCooldown = 0;
       this.flocking = false;
+      this.entering = true;
+      this.enterTime = 0;
+      this.departing = false;
+      this.departed = false;
+      this.departTime = 0;
       this.lastT = null;
       this.tv = { x: 0, y: 0 };
       this.mouse = null;
@@ -2119,11 +2133,17 @@
       this.doneCount = 0;
       this.waitCount = 0;
       const vp = this.vp;
+      const topRightX = vp.ox + vp.vw + 50;
+      const topRightY = vp.oy - 50;
       for (let n = 0; n < INTRO_AGENTS; n++) {
-        const side = n % 2 === 0;
-        const p = this.fromViewport(side ? vp.ox - 40 - rand(0, 200) : vp.ox + vp.vw + 40 + rand(0, 200), vp.oy + rand(0.05, 0.95) * vp.vh);
+        const p = this.fromViewport(topRightX + rand(-20, 20), topRightY + rand(-20, 20));
         const c = this.makeCursor(p.x, p.y, n < MIN_AGENTS);
-        c.follow = true;
+        c.shape = "arrow";
+        c.follow = false;
+        c.opacity = 1;
+        c.scale = 1;
+        c.startEnterX = p.x;
+        c.startEnterY = p.y;
         this.cursors.push(c);
       }
     }
@@ -2147,7 +2167,8 @@
         color: COLORS[id % COLORS.length],
         shape: "arrow", press: 0, task: null, gen: null, ov: null,
         idleFor: 0, leaving: false, worked: false, sticky: false,
-        vx: 0, vy: 0, angle: 0,
+        vx: 0, vy: 0, angle: 0, opacity: 1, scale: 1,
+        startExitX: x, startExitY: y, startEnterX: x, startEnterY: y,
         speed: fast ? rand(1000, 1500) : rand(300, 750),
         force: fast ? rand(3500, 6000) : rand(700, 1800),
         spin: fast ? rand(2.2, 3.4) : rand(0.8, 1.8),
@@ -2318,21 +2339,93 @@
         }
       }
 
-      if (!this.flocking && this.started && this.waitCount === 0) {
-        for (const c of this.cursors)
-          if (!c.task && !c.follow) {
-            c.follow = true;
-            c.gen = null;
-            c.leaving = false;
-            c.ov = null;
-            c.shape = "arrow";
-          }
-        if (this.cursors.every((c) => c.follow)) {
-          this.flocking = true;
-          this.endTime = this.time;
-          if (this.onComplete) this.onComplete();
+      if (!this.departing && !this.departed && this.started && this.waitCount === 0) {
+        this.departing = true;
+        this.departTime = 0;
+        this.endTime = this.time;
+        for (const c of this.cursors) {
+          c.task = null;
+          c.gen = null;
+          c.leaving = false;
+          c.ov = null;
+          c.shape = "arrow";
+          c.startExitX = c.x;
+          c.startExitY = c.y;
         }
+        if (this.onComplete) this.onComplete();
       }
+
+      if (this.departing) {
+        this.departTime += dt;
+        const t = this.departTime;
+        const midTime = 0.45;
+        const vanishTime = 1.15;
+        const center = this.fromViewport(vp.ox + vp.vw * 0.5, vp.oy + vp.vh * 0.45);
+        const topRight = this.fromViewport(vp.ox + vp.vw + 70, vp.oy - 70);
+
+        if (t <= midTime) {
+          const k = easeInOut(t / midTime);
+          for (const c of this.cursors) {
+            const spreadX = ((c.id % 6) - 2.5) * 26;
+            const spreadY = (Math.floor(c.id / 6) - 1.5) * 20;
+            const targetX = center.x + spreadX;
+            const targetY = center.y + spreadY;
+            c.x = c.startExitX + (targetX - c.startExitX) * k;
+            c.y = c.startExitY + (targetY - c.startExitY) * k;
+            c.angle = -45;
+            c.opacity = 1;
+            c.scale = 1;
+          }
+        } else if (t <= vanishTime) {
+          const k = easeOut((t - midTime) / (vanishTime - midTime));
+          for (const c of this.cursors) {
+            const spreadX = ((c.id % 6) - 2.5) * 26;
+            const spreadY = (Math.floor(c.id / 6) - 1.5) * 20;
+            const startX = center.x + spreadX;
+            const startY = center.y + spreadY;
+            const targetX = topRight.x + spreadX * 0.4;
+            const targetY = topRight.y + spreadY * 0.4;
+            c.x = startX + (targetX - startX) * k;
+            c.y = startY + (targetY - startY) * k;
+            c.angle = -45;
+            c.opacity = clamp(1 - Math.pow(k, 1.8), 0, 1);
+            c.scale = clamp(1 - k * 0.85, 0.05, 1);
+          }
+        } else {
+          this.departing = false;
+          this.departed = true;
+          for (const c of this.cursors) {
+            c.opacity = 0;
+            c.scale = 0;
+          }
+          if (this.onVanishComplete) this.onVanishComplete();
+        }
+        return;
+      }
+
+      if (this.entering) {
+        this.enterTime += dt;
+        const dur = 0.42;
+        const k = easeOut(Math.min(1, this.enterTime / dur));
+        const center = this.fromViewport(vp.ox + vp.vw * 0.5, vp.oy + vp.vh * 0.45);
+        for (const c of this.cursors) {
+          const spreadX = ((c.id % 6) - 2.5) * 44;
+          const spreadY = (Math.floor(c.id / 6) - 1.5) * 32;
+          const targetX = center.x + spreadX;
+          const targetY = center.y + spreadY;
+          c.x = c.startEnterX + (targetX - c.startEnterX) * k;
+          c.y = c.startEnterY + (targetY - c.startEnterY) * k;
+          c.angle = 135;
+          c.opacity = 1;
+          c.scale = 1;
+        }
+        if (this.enterTime >= dur) {
+          this.entering = false;
+          if (this.ready) this.start();
+        }
+        return;
+      }
+
       if (this.flocking) {
         this.flock(dt);
         return;
@@ -3487,14 +3580,15 @@
 
     async run() {
       this.env = detectEnv();
-      const shotP = this.loadShot();
       this.view = new View(this.env);
       this.engine = new Engine(this.view);
+      this.engine.speed = 2.2;
       this.sfx = new Sound();
       this.sfx.init();
       this.engine.sfx = this.sfx;
-      this.engine.onStart = () => this.view.intro.classList.add("gone");
+      this.engine.onStart = () => this.view.intro && this.view.intro.classList.add("gone");
       this.engine.onComplete = () => this.onComplete();
+      this.engine.onVanishComplete = () => this.onVanishComplete();
       this.bind();
       this.last = performance.now();
       this.raf = requestAnimationFrame((t) => this.frame(t));
@@ -3502,62 +3596,26 @@
       this.renderSoundBtn();
       this.sfx.intro();
       this.view.bg.classList.add("on");
-      this.view.intro.classList.add("on");
       this.view.hud.classList.add("on");
-      const mark = (k) => (this.timing[k] = Math.round(performance.now() - this.t0));
-      await sleep(520);
-      await unhidePage();
-      mark("blank");
-      if (this.dead) return;
-      await this.scan();
-      mark("scan");
-      if (this.dead) return;
-      try {
-        await Promise.race([document.fonts.ready, sleep(1200)]);
-      } catch (_) {}
-      mark("fonts");
       this.view.measure();
-      const shot = await shotP;
-      if (shot) {
-        const g = this.env.geom();
-        shot.valid = Math.abs(g.sx - shot.sx) < 1 && Math.abs(g.sy - shot.sy) < 1;
-      }
       let model;
       try {
-        model = captureModel(this.env, shot);
+        model = captureModel(this.env, null);
       } catch (err) {
         console.error("[swarm-rebuild] capture failed", err);
         model = { items: [], tasks: [], groups: [], guides: [], docW: 0, docH: 0 };
       }
-      mark("capture");
       if (this.dead) return;
       this.view.mount(model);
       this.engine.setModel(model);
       this.model = model;
-      mark("mount");
-      const wait = 1500 - (performance.now() - this.t0);
-      if (wait > 0) await sleep(wait);
+      await nextFrame();
       if (this.dead) return;
       this.engine.start();
     }
 
     async scan() {
-      const env = this.env;
-      const g = env.geom();
-      const H = env.scrollHeight();
-      if (H <= g.vh * 1.25) return;
-      this.view.frozen = { ...this.view.vp };
-      const steps = Math.min(28, Math.ceil(H / (g.vh * 0.85)));
-      for (let i = 1; i <= steps && !this.dead; i++) {
-        env.scrollTo(Math.min(H, (H / steps) * i));
-        await nextFrame();
-        await sleep(30);
-      }
-      env.scrollTo(g.sy, g.sx);
       await nextFrame();
-      await sleep(750);
-      env.scrollTo(g.sy, g.sx);
-      this.view.frozen = null;
     }
 
     bind() {

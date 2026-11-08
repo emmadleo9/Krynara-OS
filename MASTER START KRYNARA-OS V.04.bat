@@ -1,11 +1,11 @@
 @echo off
 setlocal
-title Krynara-OS MASTER START v0.4
+title Krynara-OS MASTER START v4.0.1.16
 cd /d "%~dp0"
 
 echo.
 echo  =============================================================
-echo   Krynara-OS MASTER START v0.4
+echo   Krynara-OS MASTER START v4.0.1.16
 echo   Gateway (2785) + Console (5173) + WhatsApp API routes
 echo  =============================================================
 echo.

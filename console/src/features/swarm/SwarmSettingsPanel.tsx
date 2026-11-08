@@ -105,7 +105,7 @@ export function SwarmSettingsPanel() {
   const pct = telemetry.total ? Math.round((telemetry.done / telemetry.total) * 100) : 100;
 
   return (
-    <HudFrame title="KRYNARA SWARM ENGINE // MULTIPLAYER REBUILD MATRIX">
+    <HudFrame title="KRYNARA SWARM ENGINE v4.0.1.16 // MULTIPLAYER REBUILD MATRIX">
       <div className="swarm-settings-grid">
         <p className="credential-notice">
           The Swarm Engine runs the authentic Joel Califa multiplayer cursor fleet. It snapshots the live Krynara-OS DOM into wireframes, typed headers, ⌥-drag duplicates with distance measurements, red guide lines with snapping, and spatial Web Audio piano notes.

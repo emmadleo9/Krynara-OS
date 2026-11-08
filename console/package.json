@@ -1,7 +1,7 @@
 {
   "name": "open-bsp-ui",
   "private": true,
-  "version": "0.1.0",
+  "version": "4.0.1.16",
   "type": "module",
   "scripts": {
     "dev": "node ../scripts/start-singularity.js",
