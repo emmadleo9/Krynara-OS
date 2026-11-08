@@ -92,13 +92,24 @@ export interface GuideLine {
   dragging?: boolean;
 }
 
-export interface SwarmConfig {
+export interface SwarmArrowCustomization {
   enabled: boolean;
-  buildOnTouch: boolean;
-  buildOnScroll: boolean;
+  speed: number;
+  agentCount: number;
+  colorTheme: 'cyan' | 'matrix' | 'amber' | 'multi' | 'monochrome';
+  showTags: boolean;
+  arrowGlow: boolean;
+  arrowScale: number;
   soundEnabled: boolean;
-  volume: number; // 0 to 1
-  speed: 1 | 2 | 3;
+  soundVolume: number;
+  autoNav: boolean;
+  autoScroll: boolean;
+  autoTouch: boolean;
+  showFloatingHud: boolean;
+}
+
+export interface SwarmConfig extends SwarmArrowCustomization {
+  volume: number;
   minAgents: number;
   maxAgents: number;
 }
