@@ -283,16 +283,17 @@
    Eliminates the 2.62s dead gap between rebuild and live systems.
    - 0.7s delay after construction allows readings and animations to ramp up
    - Seamlessly blends arrow builder departure with real live UI startup
+   - Preserves exact layout metrics, flex/grid sizing, and transforms
    ------------------------------------------------------------------------- */
 
-/* During active build: keep real UI semi-visible beneath the blueprint */
+/* During active build: keep real UI visible beneath blueprint */
 body.krynara-swarm-building .krynara-page {
   transition: opacity 0.35s ease;
-  opacity: 0.92;
+  opacity: 0.96;
 }
 
 /* 0.7s after items are constructed, as arrows start departing: */
-/* Real components and live telemetry activate and power up in lockstep */
+/* Soft brightness ramp without altering element scale or layout bounds */
 body.krynara-swarm-departing .krynara-page {
   animation: krynaraSystemSyncStartup 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -305,30 +306,21 @@ body.krynara-swarm-departing .krynara-page .gauge-circle {
 
 @keyframes krynaraSystemSyncStartup {
   0% {
-    opacity: 0.85;
-    filter: brightness(0.9) contrast(1.05);
+    opacity: 0.92;
   }
   60% {
-    opacity: 0.98;
-    filter: brightness(1.08) drop-shadow(0 0 8px rgba(138, 248, 255, 0.25));
+    opacity: 0.99;
   }
   100% {
     opacity: 1;
-    filter: none;
   }
 }
 
 @keyframes krynaraReadingPowerOn {
   0% {
-    transform: scale(0.96);
-    filter: drop-shadow(0 0 10px rgba(138, 248, 255, 0.6));
-  }
-  70% {
-    transform: scale(1.02);
-    filter: drop-shadow(0 0 4px rgba(138, 248, 255, 0.3));
+    filter: drop-shadow(0 0 6px rgba(138, 248, 255, 0.4));
   }
   100% {
-    transform: scale(1);
     filter: none;
   }
 }
