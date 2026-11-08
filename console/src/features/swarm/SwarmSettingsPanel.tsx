@@ -135,9 +135,17 @@ export function SwarmSettingsPanel() {
               <button
                 type="button"
                 className={`swarm-btn${config.enabled ? ' active' : ''}`}
+                style={{
+                  borderColor: config.enabled ? 'var(--krynara-cyan)' : 'var(--krynara-amber)',
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                }}
                 onClick={() => updateSetting('enabled', !config.enabled)}
               >
-                SWARM FLEET: {config.enabled ? 'ENABLED' : 'DISABLED'}
+                <span className={`status-dot${config.enabled ? '' : ' status-dot-offline'}`} />
+                SWARM AGENTS: {config.enabled ? 'ON [ENABLED]' : 'OFF [DISABLED]'}
               </button>
               <button
                 type="button"

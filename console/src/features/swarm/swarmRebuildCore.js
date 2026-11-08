@@ -1464,7 +1464,20 @@
         if (!covered) backdrops.push({ x: b.r.left, y: b.r.top, w: b.r.width, h: b.r.height, key: b.key, color: pageBg.color });
       }
 
-    return { items, tasks, groups, guides, docW, docH, backdrops, portKey };
+    // Calculate strict bounding box of actual content items so the world container
+    // never stretches farther down than where elements actually exist
+    let actualMaxY = vh;
+    for (const it of items) {
+      if (it.layer === "world") {
+        const itemBottom = (it.y != null ? it.y : 0) + (it.h != null ? it.h : 0);
+        if (itemBottom > actualMaxY && itemBottom < MAX_WORLD_H) {
+          actualMaxY = itemBottom;
+        }
+      }
+    }
+    const finalDocH = Math.min(Math.max(actualMaxY + 24, vh), docH);
+
+    return { items, tasks, groups, guides, docW, docH: finalDocH, backdrops, portKey };
   }
 
   // -------------------------------------------------------------- text reveal
