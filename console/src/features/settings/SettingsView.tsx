@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HudFrame } from '@/components/hud';
+import { SwarmSettingsPanel } from '@/features/swarm/SwarmSettingsPanel';
 import {
   exportAllKrynaraMemory,
   getKrynaraStorageStatus,
@@ -137,6 +138,8 @@ export function SettingsView() {
 
   return (
     <div className="settings-stack">
+      <SwarmSettingsPanel />
+
       <HudFrame title="MY ACCOUNTS // API CONNECTIONS">
         <p className="credential-notice">
           Every API in KRYNARA runs on YOUR accounts — no fake keys, no demo accounts. Sign in at each provider with your own login, generate a key, paste it below. Keys persist to <strong>D:\Krynara-OS-STORAGE\config\keys.json</strong> and never leave this machine.

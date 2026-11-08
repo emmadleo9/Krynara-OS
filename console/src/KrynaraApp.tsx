@@ -13,6 +13,7 @@ import { NovaAssistant } from '@/features/nova/NovaAssistant';
 import { AiStudio } from '@/features/studio/AiStudio';
 import { SettingsView } from '@/features/settings/SettingsView';
 import { KrynaraWhatsApp } from '@/features/social/KrynaraWhatsApp';
+import { SwarmOverlay } from '@/features/swarm/SwarmOverlay';
 import { initKrynaraStorage } from '@/services/persistentStorage';
 
 const links = [
@@ -137,6 +138,7 @@ function Shell({ children }: { children: ReactNode }) {
         </header>
         <div key={pathname} className="krynara-page">{children}</div>
         <NovaAssistant />
+        <SwarmOverlay />
       </main>
     </div>
   );
