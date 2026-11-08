@@ -239,3 +239,42 @@
   box-shadow: 0 0 6px currentColor;
 }
 
+.swarm-theme-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: rgba(138, 248, 255, 0.06);
+  border: 1px solid rgba(138, 248, 255, 0.2);
+  color: var(--krynara-text);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.swarm-theme-chip:hover {
+  background: rgba(138, 248, 255, 0.15);
+  border-color: var(--krynara-cyan);
+}
+
+.swarm-theme-chip.active {
+  background: rgba(138, 248, 255, 0.22);
+  border-color: var(--krynara-cyan);
+  box-shadow: 0 0 10px rgba(138, 248, 255, 0.4);
+}
+
+.swarm-palette-preview {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.swarm-palette-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: 0 0 4px currentColor;
+}
+
