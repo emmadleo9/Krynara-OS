@@ -3238,7 +3238,9 @@
       }
       const ctx = this.ctx;
       const out = ctx.createGain();
-      out.gain.value = this.on ? 1 : 0;
+      this.volume = globalConfig.soundVolume != null ? globalConfig.soundVolume : 0.8;
+      this.on = globalConfig.soundEnabled !== false;
+      out.gain.value = this.on ? this.volume : 0;
       const comp = ctx.createDynamicsCompressor();
       comp.threshold.value = -18;
       comp.knee.value = 14;
@@ -3299,8 +3301,17 @@
       if (!this.ctx) return;
       const t = this.ctx.currentTime;
       this.out.gain.cancelScheduledValues(t);
-      this.out.gain.setTargetAtTime(on ? 1 : 0, t, 0.05);
+      const targetGain = on ? (this.volume != null ? this.volume : 0.8) : 0;
+      this.out.gain.setTargetAtTime(targetGain, t, 0.05);
       if (on) this.resume();
+    }
+
+    setVolume(vol) {
+      this.volume = clamp(vol, 0, 1);
+      if (!this.ctx || !this.out) return;
+      const t = this.ctx.currentTime;
+      this.out.gain.cancelScheduledValues(t);
+      this.out.gain.setTargetAtTime(this.on ? this.volume : 0, t, 0.05);
     }
 
     resume() {
@@ -3956,6 +3967,8 @@
   let lastShot = null;
 
   function start() {
+    loadActiveConfig();
+    if (!globalConfig.enabled) return;
     if (app) return;
     app = new App();
     app.run().catch((err) => console.error("[swarm-rebuild]", err));
@@ -3982,8 +3995,8 @@
   }
 
   function triggerScrollRebuild() {
-    const enabled = typeof localStorage !== "undefined" ? localStorage.getItem("krynara_swarm_enabled") !== "false" : true;
-    if (!enabled) return;
+    loadActiveConfig();
+    if (!globalConfig.enabled || !globalConfig.autoScroll) return;
     if (!app || app.complete || app.dead || (app.engine && (app.engine.departed || app.engine.departing))) {
       restart();
     }
@@ -3998,6 +4011,45 @@
     stop,
     restart,
     triggerScrollRebuild,
+    updateConfig(patch) {
+      if (!patch) return;
+      globalConfig = { ...globalConfig, ...patch };
+      try {
+        localStorage.setItem("krynara_swarm_customization", JSON.stringify(globalConfig));
+      } catch (_) {}
+      if (patch.enabled === false && app) {
+        stop(false);
+        return;
+      }
+      if (app && app.engine) {
+        app.engine.cfg = globalConfig;
+        if (patch.speed !== undefined) {
+          app.engine.speed = patch.speed;
+        }
+        if (patch.soundVolume !== undefined && app.sfx) {
+          app.sfx.setVolume(patch.soundVolume);
+        }
+        if (patch.soundEnabled !== undefined && app.sfx) {
+          app.sfx.setOn(patch.soundEnabled);
+        }
+        if (patch.colorTheme !== undefined) {
+          const palette = THEMES[patch.colorTheme] || THEMES.cyan;
+          for (const c of app.engine.cursors) {
+            c.color = palette[c.id % palette.length];
+            const el = app.view.cursorEls.get(c.id);
+            if (el) {
+              const svg = el.firstChild;
+              svg.innerHTML = cursorSVG(c.shape, c.color);
+              const tag = el.lastChild;
+              if (tag) tag.style.backgroundColor = c.color;
+            }
+          }
+        }
+      }
+    },
+    getConfig() {
+      return loadActiveConfig();
+    },
     get app() {
       return app;
     },
@@ -4005,14 +4057,10 @@
       return !!(app && !app.dead);
     },
     setSpeed(val) {
-      if (app && app.engine) {
-        app.engine.speed = val;
-      }
+      this.updateConfig({ speed: val });
     },
     setSound(val) {
-      if (app && app.sfx) {
-        app.sfx.setOn(val);
-      }
+      this.updateConfig({ soundEnabled: val });
     },
     toggleTour() {
       if (app) {
@@ -4029,6 +4077,14 @@
   };
 
   window[KEY] = swarmController;
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("krynara:swarm:config-change", (e) => {
+      if (e.detail && swarmController) {
+        swarmController.updateConfig(e.detail);
+      }
+    });
+  }
 
   const enabled = typeof localStorage !== "undefined" ? localStorage.getItem("krynara_swarm_enabled") !== "false" : true;
   if (enabled && typeof document !== "undefined") {
