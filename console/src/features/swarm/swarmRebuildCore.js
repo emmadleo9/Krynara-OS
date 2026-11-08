@@ -3816,6 +3816,29 @@
       }
     }
 
+    onVanishComplete() {
+      this.complete = true;
+      if (this.sfx) {
+        this.sfx.release();
+        this.sfx.close(0.35);
+      }
+      if (this.view && this.view.host) {
+        this.view.host.style.setProperty("transition", "opacity 0.25s ease", "important");
+        this.view.host.style.setProperty("opacity", "0", "important");
+      }
+      setTimeout(() => {
+        if (!this.dead) {
+          this.dead = true;
+          cancelAnimationFrame(this.raf);
+          for (const u of this.unbinds || []) u();
+          if (this.view && this.view.host) {
+            this.view.host.remove();
+          }
+          if (app === this) app = null;
+        }
+      }, 260);
+    }
+
     destroy(reveal) {
       unhidePage();
       if (this.sfx) {
@@ -3890,12 +3913,18 @@
       a.dead = true;
       cancelAnimationFrame(a.raf);
       for (const u of a.unbinds || []) u();
-      a.view.host.remove();
-      if (a.sfx) a.sfx.close(0.1);
-      // rebuild from where the first run started so screenshot crops line up again
-      if (lastShot) a.env.scrollTo(lastShot.at.sy, lastShot.at.sx);
+      if (a.view && a.view.host) a.view.host.remove();
+      if (a.sfx) a.sfx.close(0.05);
     }
     start();
+  }
+
+  function triggerScrollRebuild() {
+    const enabled = typeof localStorage !== "undefined" ? localStorage.getItem("krynara_swarm_enabled") !== "false" : true;
+    if (!enabled) return;
+    if (!app || app.complete || app.dead || (app.engine && (app.engine.departed || app.engine.departing))) {
+      restart();
+    }
   }
 
   const swarmController = {
@@ -3906,6 +3935,7 @@
     start,
     stop,
     restart,
+    triggerScrollRebuild,
     get app() {
       return app;
     },
@@ -3962,6 +3992,11 @@ export function stopSwarm(reveal = true) {
 export function restartSwarm() {
   if (typeof window !== "undefined" && window.__swarmRebuild) {
     window.__swarmRebuild.restart();
+  }
+}
+export function triggerScrollSwarm() {
+  if (typeof window !== "undefined" && window.__swarmRebuild) {
+    window.__swarmRebuild.triggerScrollRebuild();
   }
 }
 export default swarmController;
