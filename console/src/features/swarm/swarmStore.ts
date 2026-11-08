@@ -1,33 +1,47 @@
-import type { SwarmConfig, SwarmTelemetry } from './swarmTypes';
+import type { SwarmArrowCustomization, SwarmTelemetry } from './swarmTypes';
 import { swarmSound } from './swarmSound';
 
-const DEFAULT_CONFIG: SwarmConfig = {
+export const DEFAULT_SWARM_CUSTOMIZATION: SwarmArrowCustomization = {
   enabled: true,
-  buildOnTouch: true,
-  buildOnScroll: true,
+  speed: 2,
+  agentCount: 18,
+  colorTheme: 'cyan',
+  showTags: true,
+  arrowGlow: true,
+  arrowScale: 1.0,
   soundEnabled: true,
-  volume: 0.8,
-  speed: 1,
-  minAgents: 8,
-  maxAgents: 32,
+  soundVolume: 0.8,
+  autoNav: true,
+  autoScroll: true,
+  autoTouch: false,
+  showFloatingHud: false,
 };
 
-function loadStoredConfig(): SwarmConfig {
+function loadStoredConfig(): SwarmArrowCustomization {
   try {
-    const raw = localStorage.getItem('krynara_swarm_config');
+    const raw = localStorage.getItem('krynara_swarm_customization');
     if (raw) {
-      return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
+      return { ...DEFAULT_SWARM_CUSTOMIZATION, ...JSON.parse(raw) };
     }
+    // Backward compatibility with individual legacy keys
+    return {
+      ...DEFAULT_SWARM_CUSTOMIZATION,
+      enabled: localStorage.getItem('krynara_swarm_enabled') !== 'false',
+      autoNav: localStorage.getItem('krynara_swarm_auto_nav') !== 'false',
+      autoScroll: localStorage.getItem('krynara_swarm_auto_scroll') !== 'false',
+      autoTouch: localStorage.getItem('krynara_swarm_auto_touch') === 'true',
+      showFloatingHud: localStorage.getItem('krynara_swarm_show_floating_hud') === 'true',
+    };
   } catch {
     // ignore
   }
-  return DEFAULT_CONFIG;
+  return DEFAULT_SWARM_CUSTOMIZATION;
 }
 
 type Listener = () => void;
 
 class SwarmStore {
-  private config: SwarmConfig = loadStoredConfig();
+  private config: SwarmArrowCustomization = loadStoredConfig();
   private telemetry: SwarmTelemetry = {
     online: true,
     state: 'INITIALIZING',
@@ -41,7 +55,7 @@ class SwarmStore {
   };
   private listeners = new Set<Listener>();
 
-  public getConfig(): SwarmConfig {
+  public getConfig(): SwarmArrowCustomization {
     return this.config;
   }
 
@@ -49,18 +63,32 @@ class SwarmStore {
     return this.telemetry;
   }
 
-  public updateConfig(patch: Partial<SwarmConfig>) {
+  public updateConfig(patch: Partial<SwarmArrowCustomization>) {
     this.config = { ...this.config, ...patch };
     try {
-      localStorage.setItem('krynara_swarm_config', JSON.stringify(this.config));
+      localStorage.setItem('krynara_swarm_customization', JSON.stringify(this.config));
+      // Sync legacy keys
+      if (patch.enabled !== undefined) localStorage.setItem('krynara_swarm_enabled', String(patch.enabled));
+      if (patch.autoNav !== undefined) localStorage.setItem('krynara_swarm_auto_nav', String(patch.autoNav));
+      if (patch.autoScroll !== undefined) localStorage.setItem('krynara_swarm_auto_scroll', String(patch.autoScroll));
+      if (patch.autoTouch !== undefined) localStorage.setItem('krynara_swarm_auto_touch', String(patch.autoTouch));
+      if (patch.showFloatingHud !== undefined) localStorage.setItem('krynara_swarm_show_floating_hud', String(patch.showFloatingHud));
+      if (patch.speed !== undefined) localStorage.setItem('krynara_swarm_speed', String(patch.speed));
+      if (patch.soundEnabled !== undefined) localStorage.setItem('krynara_swarm_sound', String(patch.soundEnabled));
     } catch {
       // ignore
     }
     if (patch.soundEnabled !== undefined) {
       swarmSound.setOn(patch.soundEnabled);
     }
-    if (patch.volume !== undefined) {
-      swarmSound.setVolume(patch.volume);
+    if (patch.soundVolume !== undefined) {
+      swarmSound.setVolume(patch.soundVolume);
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('krynara:swarm:config-change', { detail: this.config }));
+      if (window.__swarmRebuild?.updateConfig) {
+        window.__swarmRebuild.updateConfig(this.config);
+      }
     }
     this.emit();
   }
@@ -81,17 +109,20 @@ class SwarmStore {
     }
   }
 
-  // Trigger events for the engine
   public triggerManualRebuild() {
-    window.dispatchEvent(new CustomEvent('krynara:swarm:rebuild'));
+    if (typeof window !== 'undefined' && window.__swarmRebuild) {
+      window.__swarmRebuild.restart();
+    }
   }
 
   public toggleTour() {
-    window.dispatchEvent(new CustomEvent('krynara:swarm:toggle-tour'));
+    if (typeof window !== 'undefined' && window.__swarmRebuild) {
+      window.__swarmRebuild.toggleTour();
+    }
   }
 
-  public triggerFlockToCursor() {
-    window.dispatchEvent(new CustomEvent('krynara:swarm:flock-mouse'));
+  public resetDefaults() {
+    this.updateConfig(DEFAULT_SWARM_CUSTOMIZATION);
   }
 }
 

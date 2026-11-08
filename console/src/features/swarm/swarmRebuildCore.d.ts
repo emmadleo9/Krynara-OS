@@ -4,6 +4,7 @@ export interface SwarmRebuildController {
   stop: (reveal?: boolean) => void;
   restart: () => void;
   triggerScrollRebuild: () => void;
+  updateConfig?: (patch: Record<string, unknown>) => void;
   app: unknown;
   isRunning: boolean;
   setSpeed: (val: number) => void;

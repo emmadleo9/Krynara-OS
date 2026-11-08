@@ -27,16 +27,63 @@
     "Joan", "Donald", "Sophie", "Niklaus", "Anita", "Brian", "Mary", "Rob",
     "Ida", "Yukihiro", "Shafi", "Leslie", "Jean", "Vint", "Lynn", "Bram",
   ];
-  const COLORS = [
-    "#F24E1E", "#A259FF", "#1ABCFE", "#0ACF83", "#FF7262", "#FFC700",
-    "#9747FF", "#E8467C", "#14AE5C", "#0D99FF", "#FF8A00", "#00B5CE",
-  ];
+  const THEMES = {
+    cyan: ["#8AF8FF", "#00F0FF", "#38BDF8", "#0EA5E9", "#67E8F9", "#A5F3FC", "#00E5FF", "#7DD3FC"],
+    matrix: ["#00FF9C", "#10B981", "#34D399", "#059669", "#6EE7B7", "#00E676", "#A7F3D0", "#14AE5C"],
+    amber: ["#FFC857", "#F59E0B", "#FBBF24", "#D97706", "#FDE68A", "#FFA000", "#FFD54F", "#FFB300"],
+    multi: [
+      "#8AF8FF", "#00FF9C", "#FFC857", "#FF5F6D", "#0D99FF", "#A259FF",
+      "#FF7262", "#14AE5C", "#00B5CE", "#FF8A00", "#E8467C", "#1ABCFE",
+    ],
+    monochrome: ["#FFFFFF", "#E2E8F0", "#CBD5E1", "#94A3B8", "#64748B", "#F8FAFC", "#F1F5F9", "#E0E0E0"],
+  };
+  const COLORS = THEMES.cyan;
+
+  let globalConfig = {
+    enabled: true,
+    speed: 2,
+    agentCount: 18,
+    colorTheme: "cyan",
+    showTags: true,
+    arrowGlow: true,
+    arrowScale: 1.0,
+    soundEnabled: true,
+    soundVolume: 0.8,
+    autoNav: true,
+    autoScroll: true,
+    autoTouch: false,
+    showFloatingHud: false,
+  };
+
+  function loadActiveConfig() {
+    try {
+      if (typeof localStorage !== "undefined") {
+        const raw = localStorage.getItem("krynara_swarm_customization");
+        if (raw) {
+          globalConfig = { ...globalConfig, ...JSON.parse(raw) };
+        } else {
+          if (localStorage.getItem("krynara_swarm_enabled") !== null) {
+            globalConfig.enabled = localStorage.getItem("krynara_swarm_enabled") !== "false";
+          }
+          if (localStorage.getItem("krynara_swarm_speed") !== null) {
+            globalConfig.speed = parseFloat(localStorage.getItem("krynara_swarm_speed")) || 2;
+          }
+          if (localStorage.getItem("krynara_swarm_sound") !== null) {
+            globalConfig.soundEnabled = localStorage.getItem("krynara_swarm_sound") !== "false";
+          }
+        }
+      }
+    } catch (_) {}
+    return globalConfig;
+  }
+  loadActiveConfig();
+
   const BLUE = "#0D99FF";
   const RED = "#F24822";
   const RULER = 20;
-  const MIN_AGENTS = 8;
-  const MAX_AGENTS = 48;
-  const FLOCK_AGENTS = 36;
+  const MIN_AGENTS = 6;
+  const MAX_AGENTS = 36;
+  const FLOCK_AGENTS = 28;
   const INTRO_AGENTS = 18;
   const MAX_ITEMS = 4000;
   const MAX_WORLD_H = 40000;
@@ -1940,10 +1987,21 @@
           tag.style.backgroundColor = c.color;
         }
         if (tag) {
-          const hideTag = (c.shape === "arrow" && (E.departing || E.entering || c.departing)) || op < 0.6;
-          tag.style.opacity = hideTag ? "0" : (c.press > 0 ? "0.6" : "1");
+          if (E.cfg?.showTags === false) {
+            tag.style.display = "none";
+          } else {
+            tag.style.display = "";
+            const hideTag = (c.shape === "arrow" && (E.departing || E.entering || c.departing)) || op < 0.6;
+            tag.style.opacity = hideTag ? "0" : (c.press > 0 ? "0.6" : "1");
+          }
         }
-        const curScale = c.scale != null ? c.scale : 1;
+        if (E.cfg?.arrowGlow) {
+          svg.style.filter = `drop-shadow(0 0 6px ${c.color}) drop-shadow(0 2px 4px rgba(0,0,0,.6))`;
+        } else {
+          svg.style.filter = `drop-shadow(0 1px 2px rgba(0,0,0,.6))`;
+        }
+        const baseScale = E.cfg?.arrowScale != null ? E.cfg.arrowScale : 1.0;
+        const curScale = (c.scale != null ? c.scale : 1) * baseScale;
         const s = (1 - c.press * 0.12) * curScale;
         svg.style.transform = `translate(${-el._hx}px,${-el._hy}px) rotate(${f1(c.angle)}deg) scale(${f1(s)})`;
       }
