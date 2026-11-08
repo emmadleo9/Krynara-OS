@@ -3,6 +3,7 @@ export interface SwarmRebuildController {
   start: () => void;
   stop: (reveal?: boolean) => void;
   restart: () => void;
+  triggerScrollRebuild: () => void;
   app: unknown;
   isRunning: boolean;
   setSpeed: (val: number) => void;
@@ -14,5 +15,6 @@ export declare const swarmController: SwarmRebuildController | null;
 export declare function startSwarm(): void;
 export declare function stopSwarm(reveal?: boolean): void;
 export declare function restartSwarm(): void;
+export declare function triggerScrollSwarm(): void;
 export default swarmController;
 

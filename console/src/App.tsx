@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { HudFrame, GaugeCircle } from './components/hud';
 import { GlobeMap } from './features/world/components/GlobeMap';

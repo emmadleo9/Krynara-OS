@@ -29,6 +29,9 @@ export function SwarmSettingsPanel() {
   const [autoNav, setAutoNav] = useState(
     () => localStorage.getItem('krynara_swarm_auto_nav') !== 'false',
   );
+  const [autoScroll, setAutoScroll] = useState(
+    () => localStorage.getItem('krynara_swarm_auto_scroll') !== 'false',
+  );
   const [autoTouch, setAutoTouch] = useState(
     () => localStorage.getItem('krynara_swarm_auto_touch') !== 'false',
   );
@@ -87,6 +90,12 @@ export function SwarmSettingsPanel() {
     const next = !autoNav;
     setAutoNav(next);
     localStorage.setItem('krynara_swarm_auto_nav', String(next));
+  };
+
+  const toggleAutoScroll = () => {
+    const next = !autoScroll;
+    setAutoScroll(next);
+    localStorage.setItem('krynara_swarm_auto_scroll', String(next));
   };
 
   const toggleAutoTouch = () => {
@@ -228,6 +237,13 @@ export function SwarmSettingsPanel() {
                 onClick={toggleAutoNav}
               >
                 BUILD ON ROUTE CHANGE {autoNav ? 'ON' : 'OFF'}
+              </button>
+              <button
+                type="button"
+                className={`swarm-btn${autoScroll ? ' active' : ''}`}
+                onClick={toggleAutoScroll}
+              >
+                BUILD ON SCROLL {autoScroll ? 'ON' : 'OFF'}
               </button>
               <button
                 type="button"
