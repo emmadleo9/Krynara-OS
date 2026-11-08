@@ -2172,7 +2172,8 @@
       this.frontier = 0;
       this.vel = 0;
       this.tempo = 1;
-      this.speed = 2.2;
+      const cfg = (this.cfg = loadActiveConfig());
+      this.speed = cfg.speed || 2.2;
       this.time = 0;
       this.rulers = { want: 0, t: 0, lastNeed: -10 };
       this.lastScroll = null;
@@ -2193,9 +2194,10 @@
       const vp = this.vp;
       const topRightX = vp.ox + vp.vw + 50;
       const topRightY = vp.oy - 50;
-      for (let n = 0; n < INTRO_AGENTS; n++) {
+      const count = clamp(cfg.agentCount || 18, 4, 36);
+      for (let n = 0; n < count; n++) {
         const p = this.fromViewport(topRightX + rand(-20, 20), topRightY + rand(-20, 20));
-        const c = this.makeCursor(p.x, p.y, n < MIN_AGENTS);
+        const c = this.makeCursor(p.x, p.y, n < Math.min(8, Math.floor(count / 2)));
         c.shape = "arrow";
         c.follow = false;
         c.opacity = 1;
@@ -2219,10 +2221,12 @@
     makeCursor(x, y, home = false) {
       const id = this.nextId++;
       const fast = Math.random() < 0.25;
+      const palette = THEMES[this.cfg?.colorTheme] || THEMES.cyan;
+      const color = palette[id % palette.length];
       return {
         id, x, y, home,
         name: NAMES[id % NAMES.length],
-        color: COLORS[id % COLORS.length],
+        color,
         shape: "arrow", press: 0, task: null, gen: null, ov: null,
         idleFor: 0, leaving: false, worked: false, sticky: false,
         vx: 0, vy: 0, angle: 0, opacity: 1, scale: 1,
