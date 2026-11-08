@@ -15,3 +15,4 @@ export declare function startSwarm(): void;
 export declare function stopSwarm(reveal?: boolean): void;
 export declare function restartSwarm(): void;
 export default swarmController;
+
