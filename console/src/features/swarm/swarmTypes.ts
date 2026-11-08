@@ -97,6 +97,7 @@ export interface SwarmArrowCustomization {
   speed: number;
   agentCount: number;
   colorTheme: 'cyan' | 'matrix' | 'amber' | 'multi' | 'monochrome';
+  arrowHeadTheme: 'default' | 'shooting-stars';
   showTags: boolean;
   arrowGlow: boolean;
   arrowScale: number;

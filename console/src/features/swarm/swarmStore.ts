@@ -6,6 +6,7 @@ export const DEFAULT_SWARM_CUSTOMIZATION: SwarmArrowCustomization = {
   speed: 2,
   agentCount: 18,
   colorTheme: 'cyan',
+  arrowHeadTheme: 'shooting-stars',
   showTags: true,
   arrowGlow: true,
   arrowScale: 1.0,
