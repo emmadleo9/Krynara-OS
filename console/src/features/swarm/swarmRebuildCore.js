@@ -1683,27 +1683,20 @@
         this.bg.style.backgroundRepeat = pb.repeat;
       }
       this.makeIntroLogo();
+      const isSettings = typeof window !== "undefined" && window.location.pathname.startsWith("/settings");
+      if (!isSettings && !window.__swarmShowFloatingHud) {
+        this.host.setAttribute("data-hide-hud", "true");
+      }
       document.documentElement.appendChild(host);
       this.measure();
     }
 
     makeIntroLogo() {
-      const links = [...document.querySelectorAll('link[rel~="icon"], link[rel="apple-touch-icon"], link[rel="shortcut icon"]')];
-      const sized = links
-        .map((l) => ({ href: l.href, s: parseInt((l.getAttribute("sizes") || "0").split("x")[0], 10) || (l.rel.includes("apple") ? 180 : 32) }))
-        .filter((l) => l.href)
-        .sort((a, b) => b.s - a.s);
-      const label = (document.title || location.hostname || "?").replace(/^www\./, "").trim();
-      const mono = () => {
-        this.intro.innerHTML = "";
-        const d = document.createElement("div");
-        d.className = "mono";
-        d.textContent = (label[0] || "?").toUpperCase();
-        this.intro.appendChild(d);
-      };
-      const href = sized.length ? sized[0].href : location.origin + "/favicon.ico";
+      const href = "/krynara-official.png";
       const img = document.createElement("img");
-      img.onerror = mono;
+      img.onerror = () => {
+        this.intro.innerHTML = '<div class="mono">K</div>';
+      };
       img.src = href;
       this.intro.appendChild(img);
     }
@@ -3712,6 +3705,23 @@
         this._dots = key;
         v.dots.innerHTML = busy.map((c) => `<i style="background:${c.color}" title="${c.name}">${c.name[0]}</i>`).join("");
       }
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("krynara:swarm:telemetry", {
+            detail: {
+              workers,
+              total,
+              done,
+              speed: this.engine.speed,
+              sound: this.sfx ? this.sfx.on : true,
+              tour: this.tour,
+              complete: this.complete,
+              started: E.started,
+              pct: total ? Math.round((done / total) * 100) : 0,
+            },
+          })
+        );
+      }
     }
 
     onComplete() {
@@ -3729,6 +3739,23 @@
       v.root.querySelector('[data-a="tour"]').hidden = true;
       v.root.querySelector('[data-a="speed"]').hidden = true;
       this.tour = false;
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("krynara:swarm:telemetry", {
+            detail: {
+              workers,
+              total: E.tasks.length,
+              done: E.doneCount,
+              speed: this.engine.speed,
+              sound: this.sfx ? this.sfx.on : true,
+              tour: false,
+              complete: true,
+              started: true,
+              pct: 100,
+            },
+          })
+        );
+      }
     }
 
     destroy(reveal) {
@@ -3813,17 +3840,70 @@
     start();
   }
 
-  window[KEY] = {
+  const swarmController = {
     toggle() {
       if (app) stop(false);
       else start();
     },
     start,
     stop,
+    restart,
     get app() {
       return app;
     },
+    get isRunning() {
+      return !!(app && !app.dead);
+    },
+    setSpeed(val) {
+      if (app && app.engine) {
+        app.engine.speed = val;
+      }
+    },
+    setSound(val) {
+      if (app && app.sfx) {
+        app.sfx.setOn(val);
+      }
+    },
+    toggleTour() {
+      if (app) {
+        app.tour = !app.tour;
+        const b = app.view.root.querySelector('[data-a="tour"]');
+        if (b) {
+          b.classList.toggle("on", app.tour);
+          b.textContent = app.tour ? "Touring" : "Tour";
+        }
+        if (app.tour && app.engine) app.engine.start();
+      }
+    },
     debug: { captureModel, detectEnv, Sound },
   };
-  start();
+
+  window[KEY] = swarmController;
+
+  const enabled = typeof localStorage !== "undefined" ? localStorage.getItem("krynara_swarm_enabled") !== "false" : true;
+  if (enabled && typeof document !== "undefined") {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(start, 250));
+    } else {
+      setTimeout(start, 250);
+    }
+  }
 })();
+
+export const swarmController = typeof window !== "undefined" ? window.__swarmRebuild : null;
+export function startSwarm() {
+  if (typeof window !== "undefined" && window.__swarmRebuild) {
+    window.__swarmRebuild.start();
+  }
+}
+export function stopSwarm(reveal = true) {
+  if (typeof window !== "undefined" && window.__swarmRebuild) {
+    window.__swarmRebuild.stop(reveal);
+  }
+}
+export function restartSwarm() {
+  if (typeof window !== "undefined" && window.__swarmRebuild) {
+    window.__swarmRebuild.restart();
+  }
+}
+export default swarmController;
