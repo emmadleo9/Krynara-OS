@@ -667,6 +667,8 @@
       s += `display:${d};padding:${pad("top")}px ${pad("right")}px ${pad("bottom")}px ${pad("left")}px;`;
       if (cs.overflowX !== "visible" || cs.overflowY !== "visible" || cs.textOverflow === "ellipsis" || (cs.webkitLineClamp && cs.webkitLineClamp !== "none")) {
         s += styleString(cs, ["overflow-x", "overflow-y", "text-overflow", "-webkit-line-clamp", "-webkit-box-orient"]);
+      } else {
+        s += "overflow:hidden;";
       }
       return s + "margin:0;box-sizing:border-box;width:100%;height:100%;position:relative;";
     }
@@ -1097,6 +1099,7 @@
       if (items.length >= MAX_ITEMS) return;
       const tag = el.localName;
       if (SKIP.has(tag) || el === env.host) return;
+      if (el.classList && (el.classList.contains("nova-orb") || el.closest(".nova-orb") || el.closest(".nova-panel"))) return;
       const cs = css(el);
       const disp = cs.display;
       if (disp === "none") return;
