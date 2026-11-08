@@ -33,9 +33,7 @@ export function SwarmOverlay() {
 
     // Small delay to allow React to render the new route's DOM before snapshot
     const timer = setTimeout(() => {
-      if (window.__swarmRebuild) {
-        window.__swarmRebuild.restart();
-      }
+      restartSwarm();
     }, 300);
 
     return () => clearTimeout(timer);
