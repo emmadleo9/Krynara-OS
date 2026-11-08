@@ -96,5 +96,24 @@ export function SwarmOverlay() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Touch / click trigger:
+  // If autoTouch is enabled in settings, any click/tap anywhere restarts the swarm.
+  // Uses a cooldown so rapid clicks don't spam restarts.
+  useEffect(() => {
+    let lastTrigger = 0;
+    const handlePointerDown = () => {
+      const autoTouch = localStorage.getItem('krynara_swarm_auto_touch') === 'true';
+      if (!autoTouch) return;
+      const now = Date.now();
+      // 3-second cooldown between touch-triggered rebuilds
+      if (now - lastTrigger < 3000) return;
+      lastTrigger = now;
+      window.__swarmRebuild?.restart();
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown, { capture: true, passive: true });
+    return () => window.removeEventListener('pointerdown', handlePointerDown, { capture: true });
+  }, []);
+
   return null;
 }

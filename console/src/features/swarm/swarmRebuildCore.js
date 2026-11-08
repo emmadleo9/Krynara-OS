@@ -3970,6 +3970,10 @@
     loadActiveConfig();
     if (!globalConfig.enabled) return;
     if (app) return;
+    // Sync the floating HUD global flag before creating App so the View picks it up
+    if (typeof window !== "undefined") {
+      window.__swarmShowFloatingHud = !!globalConfig.showFloatingHud;
+    }
     app = new App();
     app.run().catch((err) => console.error("[swarm-rebuild]", err));
   }
@@ -4045,6 +4049,19 @@
             }
           }
         }
+        if (patch.showFloatingHud !== undefined && app.view && app.view.host) {
+          window.__swarmShowFloatingHud = !!patch.showFloatingHud;
+          if (patch.showFloatingHud) {
+            app.view.host.removeAttribute("data-hide-hud");
+          } else {
+            const isSettings = window.location.pathname.startsWith("/settings");
+            if (!isSettings) app.view.host.setAttribute("data-hide-hud", "true");
+          }
+        }
+      }
+      // Always sync the global flag so next app launch picks it up
+      if (patch.showFloatingHud !== undefined) {
+        window.__swarmShowFloatingHud = !!patch.showFloatingHud;
       }
     },
     getConfig() {

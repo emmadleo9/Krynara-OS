@@ -85,6 +85,10 @@ class SwarmStore {
       swarmSound.setVolume(patch.soundVolume);
     }
     if (typeof window !== 'undefined') {
+      // Sync showFloatingHud global flag immediately so the running engine can read it
+      if (patch.showFloatingHud !== undefined) {
+        window.__swarmShowFloatingHud = !!patch.showFloatingHud;
+      }
       window.dispatchEvent(new CustomEvent('krynara:swarm:config-change', { detail: this.config }));
       if (window.__swarmRebuild?.updateConfig) {
         window.__swarmRebuild.updateConfig(this.config as unknown as Record<string, unknown>);
