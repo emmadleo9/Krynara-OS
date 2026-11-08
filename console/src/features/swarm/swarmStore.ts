@@ -87,7 +87,7 @@ class SwarmStore {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('krynara:swarm:config-change', { detail: this.config }));
       if (window.__swarmRebuild?.updateConfig) {
-        window.__swarmRebuild.updateConfig(this.config);
+        window.__swarmRebuild.updateConfig(this.config as unknown as Record<string, unknown>);
       }
     }
     this.emit();

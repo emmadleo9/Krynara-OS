@@ -11,6 +11,8 @@ declare global {
       stop: (reveal?: boolean) => void;
       restart: () => void;
       triggerScrollRebuild: () => void;
+      updateConfig?: (patch: Record<string, unknown>) => void;
+      getConfig?: () => Record<string, unknown>;
       app: unknown;
       isRunning: boolean;
       setSpeed: (val: number) => void;
