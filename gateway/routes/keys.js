@@ -27,6 +27,8 @@ const KEY_REGISTRY = [
   { id: 'VITE_MAPBOX_TOKEN', envKeys: ['VITE_MAPBOX_TOKEN', 'MAPBOX_TOKEN'], label: 'Mapbox', url: 'https://account.mapbox.com/access-tokens/', scope: 'satellite basemap fallback' },
   { id: 'VITE_ELEVENLABS_API_KEY', envKeys: ['VITE_ELEVENLABS_API_KEY', 'ELEVENLABS_API_KEY'], label: 'ElevenLabs', url: 'https://elevenlabs.io/app/settings/api-keys', scope: 'British TTS audio' },
   { id: 'VITE_OPENSKY_USER', envKeys: ['VITE_OPENSKY_USER', 'OPENSKY_USER'], label: 'OpenSky Network', url: 'https://opensky-network.org/', scope: 'live plane telemetry' },
+  { id: 'TELEGRAM_API_ID', envKeys: ['TELEGRAM_API_ID', 'TELEGRAM_API_ID_'], label: 'Telegram API ID (my.telegram.org)', url: 'https://my.telegram.org', scope: 'real messaging — API development tools' },
+  { id: 'TELEGRAM_API_HASH', envKeys: ['TELEGRAM_API_HASH'], label: 'Telegram API Hash (my.telegram.org)', url: 'https://my.telegram.org', scope: 'real messaging — secret hash' },
 ];
 
 function readStore() {

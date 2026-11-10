@@ -142,7 +142,8 @@ export function SettingsView() {
 
       <HudFrame title="MY ACCOUNTS // API CONNECTIONS">
         <p className="credential-notice">
-          Every API in KRYNARA runs on YOUR accounts — no fake keys, no demo accounts. Sign in at each provider with your own login, generate a key, paste it below.           Keys persist to <strong>{'<KRYNARA_STORAGE_ROOT>'}\config\keys.json</strong> and never leave this machine.
+          Every API in KRYNARA runs on YOUR accounts — no fake keys, no demo accounts. Sign in at each provider with your own login, generate a key, paste it below.{' '}Keys persist to <strong>{'<KRYNARA_STORAGE_ROOT>'}\config\keys.json</strong> and never leave this machine.{' '}
+          Telegram keys? <a href="https://my.telegram.org" target="_blank" rel="noreferrer" className="hud-link">HOW TO GET KEYS →</a> (my.telegram.org → API development tools → Create app → copy api_id + api_hash).
         </p>
         <div className="settings-key-grid">
           {keys.map((entry) => (
