@@ -10,6 +10,7 @@ import {
   testKrynaraPersistence,
 } from '@/services/persistentStorage';
 import { checkLimit } from '@/services/quotaManager';
+import { TelegramSettings } from './TelegramSettings';
 
 type KeyEntry = { id: string; label: string; url: string; scope: string; connected: boolean; masked: string };
 
@@ -139,6 +140,8 @@ export function SettingsView() {
   return (
     <div className="settings-stack">
       <SwarmSettingsPanel />
+
+      <TelegramSettings />
 
       <HudFrame title="MY ACCOUNTS // API CONNECTIONS">
         <p className="credential-notice">

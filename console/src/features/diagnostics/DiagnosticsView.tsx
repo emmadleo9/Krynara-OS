@@ -36,7 +36,7 @@ const checks: Array<Pick<ApiCheck, 'name' | 'url' | 'tokenKey' | 'userIdKey' | '
   { name: 'ESRI SATELLITE TILES', url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/2/1/1' },
   { name: 'AWS TERRAIN TILES', url: 'https://elevation-tiles-prod.s3.amazonaws.com/terrarium/2/1/1.png' },
   { name: 'LOCAL AI / OLLAMA', url: '/api/nova/models', availabilityField: 'available' },
-  { name: 'TELEGRAM', tokenKey: 'telegram_bot_token' },
+  { name: 'TELEGRAM', url: '/api/telegram/status', statusField: 'authorized' },
   { name: 'DISCORD', tokenKey: 'discord_bot_token' },
   { name: 'KRYNARA WHATSAPP', url: '/api/whatsapp/status', statusField: 'status' },
   { name: 'INSTAGRAM', tokenKey: 'instagram_token', userIdKey: 'instagram_user_id' },
@@ -100,9 +100,14 @@ async function performCheck(check: CheckConfig, url: string, headers: Headers, s
       if (feed.error) throw new Error(feed.error);
       return { ...check, status: 'online', latency, lastChecked: checkedAt, detail: `FEED RESPONDED · ${feed.count ?? 0} VEHICLES` };
     }
-    if (check.statusField && body?.[check.statusField] !== 'online') {
-      const state = body?.[check.statusField];
-      return { ...check, status: 'offline', latency, lastChecked: checkedAt, detail: typeof state === 'string' ? `SESSION ${state.toUpperCase()}` : 'SERVICE OFFLINE' };
+    if (check.statusField) {
+      const value = body?.[check.statusField];
+      const ok = value === 'online' || value === true;
+      if (!ok) {
+        return { ...check, status: 'offline', latency, lastChecked: checkedAt, detail: typeof value === 'string' ? `SESSION ${value.toUpperCase()}` : 'SESSION NOT READY' };
+      }
+      const user = (body as { user?: { username?: string } } | undefined)?.user;
+      return { ...check, status: 'online', latency, lastChecked: checkedAt, detail: user?.username ? `LOGGED IN AS @${String(user.username).toUpperCase()}` : 'SESSION READY' };
     }
     return { ...check, status: 'online', latency, lastChecked: checkedAt, detail: 'ENDPOINT RESPONDED' };
   } catch (reason) {

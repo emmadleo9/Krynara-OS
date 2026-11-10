@@ -153,30 +153,29 @@ export function TelegramSettings() {
         {step === 'phone' && (
           <div className="settings-key-row">
             <input
+              id="tg-phone"
               aria-label="Telegram phone number"
               autoComplete="off"
               placeholder="+92300XXXXXXX — your Telegram phone number"
-              value={'' /* controlled below */}
-              onChange={() => {}}
               onKeyDown={(e) => { if (e.key === 'Enter') void submit('send-code', (e.target as HTMLInputElement).value); }}
             />
-            <button type="button" className="hud-button" onClick={(e) => void submit('send-code', (e.currentTarget.previousElementSibling as HTMLInputElement).value)}>
+            <button type="button" className="hud-button" onClick={() => void submit('send-code', (document.getElementById('tg-phone') as HTMLInputElement)?.value ?? '')}>
               {busy === 'send-code' ? 'SENDING…' : 'SEND CODE'}
             </button>
           </div>
-
         )}
 
         {/* Step: code */}
         {step === 'code' && (
           <div className="settings-key-row">
             <input
+              id="tg-code"
               aria-label="Telegram login code"
               autoComplete="one-time-code"
               placeholder="Login code Telegram just sent you"
               onKeyDown={(e) => { if (e.key === 'Enter') void submit('verify-code', (e.target as HTMLInputElement).value); }}
             />
-            <button type="button" className="hud-button" onClick={(e) => void submit('verify-code', (e.currentTarget.previousElementSibling as HTMLInputElement).value)}>
+            <button type="button" className="hud-button" onClick={() => void submit('verify-code', (document.getElementById('tg-code') as HTMLInputElement)?.value ?? '')}>
               {busy === 'verify-code' ? 'VERIFYING…' : 'VERIFY CODE'}
             </button>
           </div>
@@ -186,19 +185,19 @@ export function TelegramSettings() {
         {step === 'password' && (
           <div className="settings-key-row">
             <input
+              id="tg-password"
               aria-label="Telegram 2FA password"
               type="password"
               autoComplete="current-password"
               placeholder="Two-step verification password"
               onKeyDown={(e) => { if (e.key === 'Enter') void submit('password', (e.target as HTMLInputElement).value); }}
             />
-            <button type="button" className="hud-button" onClick={(e) => void submit('password', (e.currentTarget.firstElementChild as HTMLInputElement).value)}>
+            <button type="button" className="hud-button" onClick={() => void submit('password', (document.getElementById('tg-password') as HTMLInputElement)?.value ?? '')}>
               {busy === 'password' ? 'CHECKING…' : 'UNLOCK 2FA'}
             </button>
-            <small className="inline-status">Only needed if you enabled two-step verification.</small>
-            {step === 'password' && null}
           </div>
         )}
+        <small className="inline-status">Only needed if you enabled two-step verification.</small>
 
         {/* Step: connected */}
         {step === 'ready' && (
