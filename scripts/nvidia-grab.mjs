@@ -4,12 +4,14 @@
  */
 import { createRequire } from 'node:module';
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 const require2 = createRequire('c:/Users/User/.vscode/extensions/danielsanmedium.dscodegpt-3.24.81/standalone/');
 const { chromium } = require2('patchright');
 
-const STORE = 'D:/Krynara-OS-STORAGE/config/harvested-keys.json';
+const STORE = path.join(STORAGE_ROOT, 'config', 'harvested-keys.json');
 const load = () => existsSync(STORE) ? JSON.parse(readFileSync(STORE, 'utf8')) : {};
-const save = (patch) => { mkdirSync('D:/Krynara-OS-STORAGE/config', { recursive: true }); writeFileSync(STORE, JSON.stringify({ ...load(), ...patch }, null, 2)); };
+const save = (patch) => { mkdirSync(path.join(STORAGE_ROOT, 'config'), { recursive: true }); writeFileSync(STORE, JSON.stringify({ ...load(), ...patch }, null, 2)); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:9222');
