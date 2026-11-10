@@ -12,7 +12,7 @@ type NovaMode = "LOCAL" | "CORE";
  * Speaks British English ONLY (en-GB voice, never en-IN/en-PK voices).
  * Listens with Web Speech API, 'en-PK' primary and 'en-US' fallback (Pakistani/Urdu-English accent).
  * Executes console navigation commands. NEVER modifies its own source — generates only via
- * /api/nova/* endpoints that write into D:/Krynara-OS-STORAGE/generations.
+ * /api/nova/* endpoints that write into <KRYNARA_STORAGE_ROOT>/generations.
  */
 const COMMANDS: Array<{
   match: RegExp;
@@ -547,7 +547,7 @@ export function NovaAssistant() {
           )}
           <p className="nova-foot">
             {voiceReady ? "EN-GB VOICE LOCKED" : "BRITISH VOICE LOADING…"} ·
-            GENERATIONS → D:\Krynara-OS-STORAGE
+            GENERATIONS → <KRYNARA_STORAGE_ROOT>
           </p>
         </div>
       )}

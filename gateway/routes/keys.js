@@ -1,6 +1,6 @@
 /**
  * KRYNARA key store — user's OWN API accounts (never fake keys).
- * Persisted to D:/Krynara-OS-STORAGE/config/keys.json; never committed to git.
+ * Persisted to <KRYNARA_STORAGE_ROOT>/config/keys.json; never committed to git.
  */
 const fs = require('node:fs');
 const path = require('node:path');
