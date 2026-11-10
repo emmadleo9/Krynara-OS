@@ -5,9 +5,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const keys = require('./keys');
+const { STORAGE_ROOT } = require('../lib/storage-path');
 
 const MAX_QUOTA_BYTES = 20 * 1024 * 1024 * 1024;
-const KRYNARA_STORAGE_ROOT = 'D:/Krynara-OS-STORAGE';
+const KRYNARA_STORAGE_ROOT = STORAGE_ROOT;
 const NIM_BASE = 'https://integrate.api.nvidia.com/v1';
 const NIM_IMAGE_BASE = 'https://ai.api.nvidia.com/v1/genai';
 
@@ -165,7 +166,7 @@ module.exports = {
       const kind = req.params.kind;
       if (!['images', 'videos', 'audio', 'files'].includes(kind)) return res.status(400).json({ error: 'bad kind' });
       const fs = require('node:fs');
-      const dir = `D:/Krynara-OS-STORAGE/generations/${kind}`;
+      const dir = path.join(KRYNARA_STORAGE_ROOT, 'generations', kind);
       try {
         const files = fs.readdirSync(dir).filter((file) => !file.endsWith('.json')).slice(-60).reverse();
         res.json({ kind, files });
@@ -187,7 +188,7 @@ module.exports = {
     app.get('/generations/:kind/:file', (req, res) => {
       const { kind, file } = req.params;
       if (!['images', 'videos', 'audio', 'files'].includes(kind) || file.includes('..')) return res.status(400).end();
-      res.sendFile(path.join('D:', 'Krynara-OS-STORAGE', 'generations', kind, file));
+      res.sendFile(path.join(KRYNARA_STORAGE_ROOT, 'generations', kind, file));
     });
   },
 };

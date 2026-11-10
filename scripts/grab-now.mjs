@@ -1,13 +1,15 @@
 /** Grab NVIDIA key from the tab you just signed into. Scans page text, localStorage, session storage, and meta tags. */
 import { createRequire } from 'node:module';
 import { writeFileSync, mkdirSync, readFileSync, existsSync } from 'node:fs';
+import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 const require2 = createRequire('c:/Users/User/.vscode/extensions/danielsanmedium.dscodegpt-3.24.81/standalone/');
 const { chromium } = require2('patchright');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-const STORE = 'D:/Krynara-OS-STORAGE/config/harvested-keys.json';
+const STORE = path.join(STORAGE_ROOT, 'config', 'harvested-keys.json');
 const load = () => existsSync(STORE) ? JSON.parse(readFileSync(STORE, 'utf8')) : {};
-const save = (patch) => { mkdirSync('D:/Krynara-OS-STORAGE/config', { recursive: true }); writeFileSync(STORE, JSON.stringify({ ...load(), ...patch }, null, 2)); };
+const save = (patch) => { mkdirSync(path.join(STORAGE_ROOT, 'config'), { recursive: true }); writeFileSync(STORE, JSON.stringify({ ...load(), ...patch }, null, 2)); };
 
 const browser = await chromium.connectOverCDP('http://127.0.0.1:51344');
 const context = browser.contexts()[0];
@@ -55,7 +57,7 @@ if (scan.nvapi?.length) {
   const key = [...new Set(scan.nvapi)][0];
   save({ nvidiaApiKey: key, nvidiaLoggedIn: true });
   console.log('\n✅ NVIDIA KEY CAPTURED:', key.slice(0, 16) + '…');
-  console.log('SAVED to D:/Krynara-OS-STORAGE/config/harvested-keys.json');
+  console.log('SAVED to', path.join(STORAGE_ROOT, 'config', 'harvested-keys.json'));
 } else {
   console.log('\nno nvapi- key in DOM/storage yet.');
   console.log('If you see a masked key (nvapi-…) click the COPY button next to it — the full value may land on the clipboard; I can read the clipboard next.');

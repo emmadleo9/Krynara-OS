@@ -4,8 +4,9 @@
  */
 const fs = require('node:fs');
 const path = require('node:path');
+const { STORAGE_ROOT } = require('../lib/storage-path');
 
-const KEY_DIR = 'D:/Krynara-OS-STORAGE/config';
+const KEY_DIR = path.join(STORAGE_ROOT, 'config');
 const KEY_FILE = path.join(KEY_DIR, 'keys.json');
 const REPO_ROOT = path.join(__dirname, '..', '..');
 const ENV_FILES = [

@@ -8,6 +8,8 @@
  */
 import { createRequire } from 'node:module';
 import { writeFileSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 const require2 = createRequire('c:/Users/User/.vscode/extensions/danielsanmedium.dscodegpt-3.24.81/standalone/');
 const { chromium } = require2('patchright');
 
@@ -115,8 +117,8 @@ if (safe.openWeatherKey) safe.openWeatherKey = safe.openWeatherKey.slice(0, 8) +
 if (safe.elevenLabsKey) safe.elevenLabsKey = safe.elevenLabsKey.slice(0, 8) + '…';
 console.log(JSON.stringify(safe, null, 1));
 
-mkdirSync('D:/Krynara-OS-STORAGE/config', { recursive: true });
-writeFileSync('D:/Krynara-OS-STORAGE/config/harvested-keys.json', JSON.stringify(results, null, 2));
-console.log('FULL KEYS → D:/Krynara-OS-STORAGE/config/harvested-keys.json');
+mkdirSync(path.join(STORAGE_ROOT, 'config'), { recursive: true });
+writeFileSync(path.join(STORAGE_ROOT, 'config', 'harvested-keys.json'), JSON.stringify(results, null, 2));
+console.log('FULL KEYS →', path.join(STORAGE_ROOT, 'config', 'harvested-keys.json'));
 await browser.close();
 process.exit(0);
