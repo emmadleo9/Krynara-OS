@@ -142,7 +142,7 @@ export function SettingsView() {
 
       <HudFrame title="MY ACCOUNTS // API CONNECTIONS">
         <p className="credential-notice">
-          Every API in KRYNARA runs on YOUR accounts — no fake keys, no demo accounts. Sign in at each provider with your own login, generate a key, paste it below.           Keys persist to <strong><KRYNARA_STORAGE_ROOT>\config\keys.json</strong> and never leave this machine.
+          Every API in KRYNARA runs on YOUR accounts — no fake keys, no demo accounts. Sign in at each provider with your own login, generate a key, paste it below.           Keys persist to <strong>{'<KRYNARA_STORAGE_ROOT>'}\config\keys.json</strong> and never leave this machine.
         </p>
         <div className="settings-key-grid">
           {keys.map((entry) => (

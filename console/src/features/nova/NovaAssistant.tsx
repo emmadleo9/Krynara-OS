@@ -547,7 +547,7 @@ export function NovaAssistant() {
           )}
           <p className="nova-foot">
             {voiceReady ? "EN-GB VOICE LOCKED" : "BRITISH VOICE LOADING…"} ·
-            GENERATIONS → <KRYNARA_STORAGE_ROOT>
+            GENERATIONS → {'<KRYNARA_STORAGE_ROOT>'}
           </p>
         </div>
       )}
