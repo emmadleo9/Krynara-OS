@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 
 const candidates = [
   'meta/llama-3.3-70b-instruct',
@@ -23,8 +24,8 @@ const envFiles = [
   path.join(process.cwd(), 'console', '.env.local'),
 ];
 const keyFiles = [
-  'D:/Krynara-OS-STORAGE/config/keys.json',
-  'D:/Krynara-OS-STORAGE/config/harvested-keys.json',
+  path.join(STORAGE_ROOT, 'config', 'keys.json'),
+  path.join(STORAGE_ROOT, 'config', 'harvested-keys.json'),
 ];
 const openRouterNames = ['OPENROUTER_KEY', 'OPENROUTER_API_KEY', 'openrouterKey', 'openrouterApiKey'];
 const nvidiaNames = ['NV_API_KEY', 'NVIDIA_NIM_API_KEY', 'VITE_NVIDIA_NIM_API_KEY', 'NVIDIA_API_KEY', 'nvidiaApiKey'];

@@ -3,8 +3,10 @@
  * with offline-mode placeholders for missing keys, per the task spec.
  */
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 
-const STORE = 'D:/Krynara-OS-STORAGE/config/harvested-keys.json';
+const STORE = path.join(STORAGE_ROOT, 'config', 'harvested-keys.json');
 const data = existsSync(STORE) ? JSON.parse(readFileSync(STORE, 'utf8')) : {};
 console.log('held keys:', Object.keys(data).filter((k) => !k.endsWith('LoggedIn')).join(', ') || '(none captured)');
 

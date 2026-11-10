@@ -7,6 +7,8 @@
 import { createRequire } from 'node:module';
 import { execSync, exec } from 'node:child_process';
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
+import { STORAGE_ROOT } from './storage-path.mjs';
 
 const DB = process.env.TEMP + '\\LD-copy';
 if (!existsSync(DB)) { console.log('copy Login Data first'); process.exit(1); }
@@ -62,10 +64,10 @@ for (const row of rows) {
   creds[host] = creds[host] ?? [];
   creds[host].push({ user: row.username_value, pass: decrypted ? Buffer.from(await decrypted).toString('utf8') : '(undecryptable)' });
 }
-mkdirSync('D:/Krynara-OS-STORAGE/config', { recursive: true });
-writeFileSync('D:/Krynara-OS-STORAGE/config/chrome-logins.json', JSON.stringify(creds, null, 2));
+mkdirSync(path.join(STORAGE_ROOT, 'config'), { recursive: true });
+writeFileSync(path.join(STORAGE_ROOT, 'config', 'chrome-logins.json'), JSON.stringify(creds, null, 2));
 for (const [host, entries] of Object.entries(creds)) {
   console.log(`${host}: ${entries.map((e) => e.user).join(', ')}`);
 }
-console.log('full creds → D:/Krynara-OS-STORAGE/config/chrome-logins.json (gitignored, local only)');
+console.log('full creds →', path.join(STORAGE_ROOT, 'config', 'chrome-logins.json'), '(gitignored, local only)');
 process.exit(0);
