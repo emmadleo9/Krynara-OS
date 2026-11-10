@@ -35,6 +35,7 @@ const keysRoute = require('./routes/keys');
 const novaRoute = require('./routes/nova');
 const localAiRoute = require('./routes/local-ai');
 const onlineAiRoute = require('./routes/online-ai');
+const telegramRoute = require('./routes/telegram');
 
 const app = express();
 const server = createServer(app);
@@ -116,6 +117,7 @@ localAiRoute.register(app, novaRoute.IMAGE_MODELS);
 onlineAiRoute.register(app);
 novaRoute.register(app);
 whatsapp.registerKrynaraWhatsApp(app);
+telegramRoute.register(app);
 
 app.get('/api/weather', async (req, res) => {
   const latitude = Number(req.query.latitude);
