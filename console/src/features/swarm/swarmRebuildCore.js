@@ -2520,37 +2520,21 @@
             c.scale = 1;
           }
         } else if (t <= spinTime) {
-<<<<<<< HEAD
-          // Phase 2: Arrows spin in a circle formation around center, then lock alignment facing top-right (-45 deg)
-=======
           // Arrows spin in a circle formation, then lock alignment facing top-right corner (-45 deg)
->>>>>>> 85d8868 (feat(console): refine Swarm arrow departure with circular spin and softer UI sync startup)
           const spinProgress = (t - midTime) / (spinTime - midTime);
           const spinEase = easeInOut(spinProgress);
           const baseOrbitRadius = 38;
           for (let i = 0; i < this.cursors.length; i++) {
             const c = this.cursors[i];
             const startAngle = (i / this.cursors.length) * 2 * Math.PI;
-<<<<<<< HEAD
-            // 360 degree full circular orbit
             const currentOrbitAngle = startAngle + spinEase * 2 * Math.PI;
             c.x = center.x + Math.cos(currentOrbitAngle) * baseOrbitRadius;
             c.y = center.y + Math.sin(currentOrbitAngle) * (baseOrbitRadius * 0.7);
-            // Spin rotation on own axis, ending precisely aligned pointing top-right (-45°)
-=======
-            const currentOrbitAngle = startAngle + spinEase * 2 * Math.PI;
-            c.x = center.x + Math.cos(currentOrbitAngle) * baseOrbitRadius;
-            c.y = center.y + Math.sin(currentOrbitAngle) * (baseOrbitRadius * 0.7);
->>>>>>> 85d8868 (feat(console): refine Swarm arrow departure with circular spin and softer UI sync startup)
             c.angle = spinEase * 360 - 45;
             c.opacity = 1;
             c.scale = 1;
           }
         } else if (t <= vanishTime) {
-<<<<<<< HEAD
-          // Phase 3: Face top-right direction and dash to top-right corner to leave screen & vanish
-=======
->>>>>>> 85d8868 (feat(console): refine Swarm arrow departure with circular spin and softer UI sync startup)
           const k = easeOut((t - spinTime) / (vanishTime - spinTime));
           for (const c of this.cursors) {
             const spreadX = ((c.id % 6) - 2.5) * 20;
