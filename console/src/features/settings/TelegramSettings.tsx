@@ -27,6 +27,9 @@ export function TelegramSettings() {
   const [proxy, setProxy] = useState(EMPTY_PROXY);
   const [proxyDraft, setProxyDraft] = useState(EMPTY_PROXY);
   const [proxyMsg, setProxyMsg] = useState('');
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
   const [autoProxy, setAutoProxy] = useState<AutoProxyInfo>({ lastRefreshed: null, workingCount: 0, totalCount: 0 });
   // The 4-second status poll must NEVER overwrite fields the user is editing.
   const proxyDirtyRef = useRef(false);
