@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/core-OpenJarvis-2962FF?style=for-the-badge" alt="Core: OpenJarvis" />
   <img src="https://img.shields.io/badge/gateway-OpenWA-546E7A?style=for-the-badge" alt="Gateway: OpenWA" />
   <img src="https://img.shields.io/badge/console-KRYNARA-212121?style=for-the-badge" alt="Console: KRYNARA" />
-  <img src="https://img.shields.io/badge/model-qwen2.5:3b-AA00FF?style=for-the-badge" alt="Model: qwen2.5:3b" />
+  <img src="https://img.shields.io/badge/model-local--LLM-AA00FF?style=for-the-badge" alt="Model: local LLM (Ollama)" />
   <img src="https://img.shields.io/badge/hud-v4.0.1.16-8AF8FF?style=for-the-badge" alt="HUD: v4.0.1.16" />
   <img src="https://img.shields.io/badge/offline--first-212121?style=for-the-badge" alt="Offline-first" />
   <img src="https://img.shields.io/badge/status-ONLINE-00C853?style=for-the-badge" alt="Status: ONLINE" />
@@ -104,6 +104,8 @@ npm run start        # one coordinator boots gateway (2785) + console (5173)
 # Windows: run "MASTER START Krynara-OS V.04.bat"
 ```
 
+> The local launcher runs the console on port `5173` and the gateway on `2785`. Port `3000` is used only by the Docker Compose deployment (`docker-compose.yml`), not by `npm run start`.
+
 Then open **http://localhost:5173** — the KRYNARA HUD. The master launcher checks Node.js and dependencies, reuses Ollama if running (or starts it when installed), starts the gateway first, waits for its WhatsApp/API health checks, then starts the Vite console and verifies its gateway proxy. Repeated starts reuse the existing healthy stack rather than creating duplicate servers. Use [STOP-KRYNARA.bat](./STOP-KRYNARA.bat) to stop launcher-owned processes. The gateway stays on its internal port and the Vite server proxies `/api`, `/gateway`, and `/v1` through the console origin. Pair KRYNARA WhatsApp from the Social Hub by scanning the QR with your phone.
 
 The Windows master launcher and `npm run start` use the same local gateway + console stack. Do not start the Docker Compose stack at the same time: it publishes conflicting gateway/console ports and is a separate deployment configuration.
@@ -117,9 +119,12 @@ Krynara-OS/
 ├── /core       OpenJarvis — local-first AI core
 ├── /gateway     OpenWA + KRYNARA feeds — local API gateway
 ├── /console     KRYNARA — dark OLED HUD console
+├── /data        Local runtime data (DB, Ollama, Redis)
 ├── /_ref_map    OSIRIS reference — map and public-feed patterns (not runtime)
 ├── /_refs       Vendored open-source references (jarvis, openwa, bspui, map)
 ├── /scripts     Startup and utility scripts
+├── /telegram-clone  Telegram mirror (reference)
+├── /openwa_clone    OpenWA mirror (reference)
 └── README.md
 ```
 
@@ -129,7 +134,7 @@ Console routes (`/` Dashboard, `/world` World View, `/weather` Weather Intel, `/
 
 ## 📜 License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE) for the root project. Subprojects carry their own licenses: `core/` (OpenJarvis) is Apache 2.0; `gateway/` (OpenWA) is MIT; `console/` (OpenBSP UI) is Unlicense. See LICENSES/ and each subproject's LICENSE file.
 
 ---
 
