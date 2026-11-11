@@ -11,6 +11,7 @@ import {
 } from '@/services/persistentStorage';
 import { checkLimit } from '@/services/quotaManager';
 import { TelegramSettings } from './TelegramSettings';
+import { DebugPanel } from './DebugPanel';
 
 type KeyEntry = { id: string; label: string; url: string; scope: string; connected: boolean; masked: string };
 
@@ -139,6 +140,8 @@ export function SettingsView() {
 
   return (
     <div className="settings-stack">
+      <DebugPanel />
+
       <SwarmSettingsPanel />
 
       <TelegramSettings />

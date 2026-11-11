@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { HudFrame } from '@/components/hud';
 
 type TgStatus = {
@@ -21,6 +21,13 @@ export function TelegramSettings() {
   const [proxy, setProxy] = useState(EMPTY_PROXY);
   const [proxyDraft, setProxyDraft] = useState(EMPTY_PROXY);
   const [proxyMsg, setProxyMsg] = useState('');
+  // BUG 1 FIX: track whether the user has unsaved edits in the proxy form.
+  // The 4-second status poll must NEVER overwrite fields the user is editing.
+  const proxyDirtyRef = useRef(false);
+  // Controlled inputs for phone / code / password (were uncontrolled DOM reads before).
+  const [phone, setPhone] = useState('');
+  const [code, setCode] = useState('');
+  const [password, setPassword] = useState('');
 
   const deriveStep = useCallback((s: TgStatus | null): typeof step => {
     if (!s) return 'idle';
@@ -43,9 +50,14 @@ export function TelegramSettings() {
       const res = await fetch('/api/telegram/status');
       const data = await res.json() as TgStatus;
       setStatus(data);
-      if (data.proxy) {
-        setProxy(data.proxy as typeof EMPTY_PROXY);
-        setProxyDraft(data.proxy as typeof EMPTY_PROXY);
+      // BUG 1 FIX: only seed the proxy form from the server ONCE (or when the
+      // user has no in-progress edits). Previously this ran every 4s and reset
+      // everything the user had typed back to the stored values.
+      if (data.proxy && (!proxyLoadedRef.current || !proxyDirtyRef.current)) {
+        proxyLoadedRef.current = true;
+        const saved = data.proxy as typeof EMPTY_PROXY;
+        setProxy(saved);
+        setProxyDraft((current) => (proxyDirtyRef.current ? current : saved));
       }
       setStep(deriveStep(data));
       if (data.bridgeOnline === false) setMessage('Telegram bridge offline. Run: cd "D:\\Refrences and Codes\\tweb" ; node socialhub-server.js');
@@ -55,6 +67,8 @@ export function TelegramSettings() {
       setMessage('Gateway unreachable.');
     }
   }, [deriveStep]);
+
+  const proxyLoadedRef = useRef(false);
 
   useEffect(() => { void refresh(); const t = setInterval(() => void refresh(), 4000); return () => clearInterval(t); }, [refresh]);
 
@@ -80,6 +94,9 @@ export function TelegramSettings() {
   const saveProxy = async () => {
     setProxyMsg('Saving…');
     try {
+      // BUG 1 FIX: SAVE is the single commit point. After a successful save the
+      // draft is marked clean so future polls may sync the server value in.
+      proxyDirtyRef.current = false;
       const res = await fetch('/api/telegram/proxy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -89,6 +106,7 @@ export function TelegramSettings() {
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       setProxyMsg(data.note || 'Saved.');
       setProxy(data.proxy ?? proxyDraft);
+      setProxyDraft(data.proxy ?? proxyDraft);
     } catch (err) {
       setProxyMsg(err instanceof Error ? err.message : String(err));
     }
@@ -109,6 +127,18 @@ export function TelegramSettings() {
     }
   };
 
+  // BUG 4 FIX: remember the linked account so the Social Hub Telegram tab can
+  // auto-load it. Written every time the poll sees an authorized session.
+  useEffect(() => {
+    if (status?.authorized && status.user) {
+      localStorage.setItem('krynara_tg_account', JSON.stringify({
+        name: [status.user.first_name, status.user.last_name].filter(Boolean).join(' ') || 'Telegram account',
+        username: status.user.username ?? '',
+        savedAt: new Date().toISOString(),
+      }));
+    }
+  }, [status?.authorized, status?.user]);
+
   const disconnect = async () => {
     setBusy('logout');
     try {
@@ -118,6 +148,11 @@ export function TelegramSettings() {
     } finally {
       setBusy('');
     }
+  };
+
+  const setProxyField = (patch: Partial<typeof EMPTY_PROXY>) => {
+    proxyDirtyRef.current = true;
+    setProxyDraft((current) => ({ ...current, ...patch }));
   };
 
   const dot = status?.authorized ? '' : status?.bridgeOnline ? 'waiting' : 'offline';
@@ -156,10 +191,12 @@ export function TelegramSettings() {
               id="tg-phone"
               aria-label="Telegram phone number"
               autoComplete="off"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
               placeholder="+92300XXXXXXX — your Telegram phone number"
-              onKeyDown={(e) => { if (e.key === 'Enter') void submit('send-code', (e.target as HTMLInputElement).value); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') void submit('send-code', phone); }}
             />
-            <button type="button" className="hud-button" onClick={() => void submit('send-code', (document.getElementById('tg-phone') as HTMLInputElement)?.value ?? '')}>
+            <button type="button" className="hud-button" onClick={() => void submit('send-code', phone)}>
               {busy === 'send-code' ? 'SENDING…' : 'SEND CODE'}
             </button>
           </div>
@@ -172,10 +209,12 @@ export function TelegramSettings() {
               id="tg-code"
               aria-label="Telegram login code"
               autoComplete="one-time-code"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
               placeholder="Login code Telegram just sent you"
-              onKeyDown={(e) => { if (e.key === 'Enter') void submit('verify-code', (e.target as HTMLInputElement).value); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') void submit('verify-code', code); }}
             />
-            <button type="button" className="hud-button" onClick={() => void submit('verify-code', (document.getElementById('tg-code') as HTMLInputElement)?.value ?? '')}>
+            <button type="button" className="hud-button" onClick={() => void submit('verify-code', code)}>
               {busy === 'verify-code' ? 'VERIFYING…' : 'VERIFY CODE'}
             </button>
           </div>
@@ -189,10 +228,12 @@ export function TelegramSettings() {
               aria-label="Telegram 2FA password"
               type="password"
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="Two-step verification password"
-              onKeyDown={(e) => { if (e.key === 'Enter') void submit('password', (e.target as HTMLInputElement).value); }}
+              onKeyDown={(e) => { if (e.key === 'Enter') void submit('password', password); }}
             />
-            <button type="button" className="hud-button" onClick={() => void submit('password', (document.getElementById('tg-password') as HTMLInputElement)?.value ?? '')}>
+            <button type="button" className="hud-button" onClick={() => void submit('password', password)}>
               {busy === 'password' ? 'CHECKING…' : 'UNLOCK 2FA'}
             </button>
           </div>
@@ -227,22 +268,22 @@ export function TelegramSettings() {
           <select
             aria-label="Proxy type"
             value={proxyDraft.type}
-            onChange={(e) => setProxyDraft({ ...proxyDraft, type: e.target.value })}
+            onChange={(e) => setProxyField({ type: e.target.value })}
           >
             <option value="none">None (direct)</option>
             <option value="socks5">SOCKS5</option>
             <option value="mtproto">MTProto</option>
           </select>
-          <input placeholder="Host e.g. 45.12.34.56" value={proxyDraft.host} onChange={(e) => setProxyDraft({ ...proxyDraft, host: e.target.value })} />
-          <input placeholder="Port e.g. 1080" value={proxyDraft.port} onChange={(e) => setProxyDraft({ ...proxyDraft, port: e.target.value })} />
+          <input placeholder="Host e.g. 45.12.34.56" value={proxyDraft.host} onChange={(e) => setProxyField({ host: e.target.value })} />
+          <input placeholder="Port e.g. 1080" value={proxyDraft.port} onChange={(e) => setProxyField({ port: e.target.value })} />
           {proxyDraft.type === 'socks5' && (
             <>
-              <input placeholder="Username (optional)" value={proxyDraft.username} onChange={(e) => setProxyDraft({ ...proxyDraft, username: e.target.value })} />
-              <input type="password" placeholder="Password (optional)" value={proxyDraft.password} onChange={(e) => setProxyDraft({ ...proxyDraft, password: e.target.value })} />
+              <input placeholder="Username (optional)" value={proxyDraft.username} onChange={(e) => setProxyField({ username: e.target.value })} />
+              <input type="password" placeholder="Password (optional)" value={proxyDraft.password} onChange={(e) => setProxyField({ password: e.target.value })} />
             </>
           )}
           {proxyDraft.type === 'mtproto' && (
-            <input placeholder="Secret (ee… hex)" value={proxyDraft.secret} onChange={(e) => mtprotoSecret(e.target.value)} />
+            <input placeholder="Secret (ee… hex)" value={proxyDraft.secret} onChange={(e) => setProxyField({ secret: e.target.value })} />
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
@@ -255,5 +296,4 @@ export function TelegramSettings() {
     </HudFrame>
   );
 
-  function mtprotoSecret(v: string) { setProxyDraft((cur) => ({ ...cur, secret: v })); }
 }

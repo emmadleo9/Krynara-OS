@@ -23,5 +23,33 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/main.tsx", "src/KrynaraApp.tsx"]
+  "include": [
+    "src/main.tsx",
+    "src/KrynaraApp.tsx",
+    "src/features/settings/**/*",
+    "src/features/social/**/*",
+    "src/features/swarm/SwarmSettingsPanel.tsx",
+    "src/components/hud/**/*",
+    "src/services/persistentStorage.d.ts",
+    "src/services/quotaManager.d.ts",
+    "src/lib/**/*",
+    "src/hooks/**/*",
+    "src/stores/**/*",
+    "src/supabase/**/*",
+    "src/types/**/*"
+  ],
+  "exclude": [
+    "src/brain",
+    "src/components",
+    "src/features/comms",
+    "src/features/news",
+    "src/features/swarm/swarmEngine.ts",
+    "src/features/world",
+    "src/features/world-view",
+    "src/pages",
+    "src/queries",
+    "src/routes",
+    "src/services/osint",
+    "src/App.tsx"
+  ]
 }

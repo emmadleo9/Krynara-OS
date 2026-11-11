@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from 'react';
 import { HudFrame } from '@/components/hud';
 import { KrynaraWhatsApp } from '@/features/social/KrynaraWhatsApp';
+import { TelegramLive } from '@/features/social/TelegramLive';
 
 type Platform = 'WHATSAPP' | 'TELEGRAM' | 'INSTAGRAM' | 'DISCORD';
 type Message = { id: number; sender: string; text: string; time: string; outgoing?: boolean };
@@ -129,7 +130,7 @@ export function SocialHub() {
           </button>
         ))}
       </div>
-      {platform === 'WHATSAPP' ? <KrynaraWhatsApp /> : <div className="social-workspace">
+      {platform === 'WHATSAPP' ? <KrynaraWhatsApp /> : platform === 'TELEGRAM' ? <TelegramLive /> : <div className="social-workspace">
         <HudFrame title={`${platform} // CONVERSATIONS`} className="social-chat-list">
           {selectedChats.map((chat) => (
             <button type="button" className={chat.id === chatId ? 'chat-list-item selected' : 'chat-list-item'} key={chat.id} onClick={() => setChatId(chat.id)}>

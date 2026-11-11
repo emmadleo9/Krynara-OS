@@ -5,6 +5,53 @@
  * reports authorizationStateReady — never just "keys typed".
  */
 const TWEB_BRIDGE = 'http://127.0.0.1:2787';
+const TWEB_DIR = 'D:\\Refrences and Codes\\tweb';
+
+// BUG 3 FIX: the bridge (node socialhub-server.js, port 2787) previously had
+// to be started by hand — every poll produced a hard 502. Auto-start it once
+// per gateway boot if it is down, then retry the forwarded request.
+let bridgeSpawning = false;
+let bridgeSpawned = false;
+function ensureBridge() {
+  if (bridgeSpawned || bridgeSpawning) return;
+  bridgeSpawning = true;
+  try {
+    const fs = require('node:fs');
+    if (!fs.existsSync(require('node:path').join(TWEB_DIR, 'socialhub-server.js'))) {
+      console.warn('[telegram] bridge script not found at', TWEB_DIR);
+      return;
+    }
+    const child = require('node:child_process').spawn(process.execPath, ['socialhub-server.js'], {
+      cwd: TWEB_DIR,
+      windowsHide: true,
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    child.stdout.on('data', (d) => process.stdout.write(`[tweb] ${d}`));
+    child.stderr.on('data', (d) => process.stderr.write(`[tweb] ${d}`));
+    child.on('exit', (code) => {
+      console.warn(`[telegram] bridge exited (${code}); will not auto-restart until gateway restart.`);
+      bridgeSpawned = false;
+    });
+    bridgeSpawned = true;
+    console.log('[telegram] TDLib bridge auto-started on port 2787.');
+  } catch (err) {
+    console.warn('[telegram] bridge auto-start failed:', err && err.message ? err.message : err);
+  } finally {
+    setTimeout(() => { bridgeSpawning = false; }, 5000);
+  }
+}
+
+async function bridgeUp() {
+  try {
+    const c = new AbortController();
+    const t = setTimeout(() => controllerAbort(c), 1500);
+    const res = await fetch(TWEB_BRIDGE + '/api/state', { signal: c.signal });
+    clearTimeout(t);
+    return res.ok;
+  } catch { return false; }
+}
+function controllerAbort(controller) { try { controller.abort(); } catch { /* noop */ } }
 
 async function forward(path, init) {
   const controller = new AbortController();
@@ -14,10 +61,19 @@ async function forward(path, init) {
     const body = await res.json().catch(() => ({}));
     return { status: res.status, body };
   } catch (err) {
+    // BUG 3 FIX: first failure auto-starts the bridge and retries once before
+    // surfacing the real error (still 502, but only when truly offline).
+    if (!bridgeSpawned) {
+      ensureBridge();
+      for (let i = 0; i < 20 && !(await bridgeUp()); i++) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+      if (await bridgeUp()) return forward(path, init);
+    }
     return {
       status: 502,
       body: {
-        error: 'Telegram bridge unreachable. Start it: cd "D:\\Refrences and Codes\\tweb" ; node socialhub-server.js',
+        error: 'Telegram bridge offline — starting it now, retry in ~10 seconds.',
         detail: String(err && err.message ? err.message : err),
       },
     };
