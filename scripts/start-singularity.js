@@ -1,6 +1,7 @@
 import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
+import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
@@ -54,6 +55,34 @@ const providerSecretEnvKeys = [
 ];
 
 fs.mkdirSync(runtimeDir, { recursive: true });
+
+function isPortInUse(port) {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    const settle = (result) => {
+      socket.destroy();
+      resolve(result);
+    };
+    socket.once('connect', () => settle(true));
+    socket.once('error', () => settle(false));
+    socket.setTimeout(1000, () => settle(false));
+    socket.connect(port, '127.0.0.1');
+  });
+}
+
+async function assertPortsFreeOrOwnedByUs() {
+  const checks = [
+    { port: gatewayPort, name: 'gateway', healthUrl: gatewayHealthUrl },
+    { port: consolePort, name: 'console', healthUrl: consoleHealthUrl },
+  ];
+  for (const { port, name, healthUrl } of checks) {
+    if (!(await isPortInUse(port))) continue;
+    // Port busy, but if OUR healthy stack is already serving it, reuse it.
+    if (await getHealth(healthUrl)) continue;
+    console.error(`Port ${consolePort} / ${gatewayPort} already in use. Run: taskkill /F /IM node.exe`);
+    throw Object.assign(new Error(`Port ${port} already in use by another process.`), { handled: true });
+  }
+}
 
 function isProcessRunning(pid) {
   if (!Number.isSafeInteger(pid) || pid <= 0) return false;
@@ -251,6 +280,8 @@ async function main() {
   assertPort(gatewayPort, 'GATEWAY_PORT');
   assertPort(consolePort, 'CONSOLE_PORT');
   if (gatewayPort === consolePort) throw new Error('GATEWAY_PORT and CONSOLE_PORT must be different.');
+
+  await assertPortsFreeOrOwnedByUs();
 
   const existingCoordinator = readPidFile(coordinatorPidFile);
   if (existingCoordinator !== process.pid && isProcessRunning(existingCoordinator)) {

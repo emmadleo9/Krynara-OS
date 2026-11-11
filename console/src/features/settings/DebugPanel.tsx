@@ -3,6 +3,58 @@ import { HudFrame } from '@/components/hud';
 import { readSavedAccount } from '@/features/social/TelegramLive';
 
 /**
+ * SELECTED ACCOUNT resolution order:
+ * 1. A live TDLib session (gateway reports authorized + user) — the REAL account.
+ * 2. A saved account remembered from a previous login (localStorage).
+ * 3. Telegram keys present in the gateway key store — show "Configured, connect"
+ *    instead of a meaningless "None".
+ */
+type GatewayAccountInfo = {
+  authorized: boolean;
+  user: { first_name?: string; last_name?: string; username?: string } | null;
+  configured: boolean;
+  bridgeOnline: boolean;
+};
+
+function useGatewayAccount() {
+  const [account, setAccount] = useState<{
+    name: string;
+    username: string;
+    source: 'session' | 'remembered' | 'keys';
+  } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const run = async () => {
+      const remembered = readSavedAccount();
+      let live: GatewayAccountInfo | null = null;
+      try {
+        const res = await fetch('/api/telegram/status');
+        live = (await res.json()) as GatewayAccountInfo;
+      } catch {
+        live = null;
+      }
+      if (!alive) return;
+      if (live?.authorized && live.user) {
+        const name = [live.user.first_name, live.user.last_name].filter(Boolean).join(' ') || 'Telegram account';
+        setAccount({ name, username: live.user.username ?? '', source: 'session' });
+      } else if (remembered) {
+        setAccount({ ...remembered, source: 'remembered' });
+      } else if (live?.configured) {
+        setAccount({ name: 'Telegram keys saved — connect', username: '', source: 'keys' });
+      } else {
+        setAccount(null);
+      }
+    };
+    void run();
+    const timer = window.setInterval(run, 15000);
+    return () => { alive = false; window.clearInterval(timer); };
+  }, []);
+
+  return account;
+}
+
+/**
  * DEBUG panel — shows REAL runtime facts, never a fake "Connected":
  * - Supabase URL (masked) + whether the anon key is present
  * - Whether the Supabase REST endpoint actually answers (not just "keys exist")
@@ -45,10 +97,12 @@ export function DebugPanel() {
         return;
       }
       try {
-        const res = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/`, {
-          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+        // Probe the auth health endpoint — the REST root requires a secret key
+        // and would show a false FAIL even when the app works fine.
+        const res = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/auth/v1/health`, {
+          headers: { apikey: SUPABASE_KEY },
         });
-        if (alive) { setSupabaseStatus(res.ok ? 'ok' : 'fail'); setSupabaseDetail(res.ok ? 'REST endpoint answered.' : `HTTP ${res.status}`); }
+        if (alive) { setSupabaseStatus(res.ok ? 'ok' : 'fail'); setSupabaseDetail(res.ok ? 'Project reachable (auth OK).' : `HTTP ${res.status}`); }
       } catch (err) {
         if (alive) { setSupabaseStatus('fail'); setSupabaseDetail(err instanceof Error ? err.message : String(err)); }
       }
@@ -66,7 +120,7 @@ export function DebugPanel() {
     return () => { alive = false; window.clearInterval(timer); window.removeEventListener('error', onError); };
   }, []);
 
-  const account = readSavedAccount();
+  const account = useGatewayAccount();
   const dot = supabaseStatus === 'ok' && gatewayStatus === 'ok' ? '' : 'status-dot-offline';
 
   return (
@@ -95,10 +149,14 @@ export function DebugPanel() {
         <div className="settings-key-head">
           <span className={`status-dot${account ? '' : ' status-dot-offline'}`} />
           <strong>SELECTED ACCOUNT</strong>
-          <small>{account ? `${account.name}${account.username ? ` (@${account.username})` : ''}` : 'None'}</small>
+          <small>
+            {account
+              ? `${account.name}${account.username ? ` (@${account.username})` : ''}`
+              : 'None — CONNECT TELEGRAM in MY ACCOUNTS below'}
+          </small>
         </div>
         <div className="settings-key-head">
-          <span className="status-dot status-dot-offline" />
+          <span className={`status-dot${lastError ? ' status-dot-offline' : ''}`} />
           <strong>LAST ERROR</strong>
           <small>{lastError || 'None'}</small>
         </div>

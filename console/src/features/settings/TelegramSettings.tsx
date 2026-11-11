@@ -176,6 +176,25 @@ export function TelegramSettings() {
 
         {message && <p className="inline-status">{message}</p>}
 
+        {/* Step: keys saved but no session yet — the explicit CONNECT entry point.
+            Previously this state rendered NOTHING, so there was no button to
+            click and connect felt impossible. */}
+        {step === 'idle' && status?.configured && !status?.authorized && (
+          <div className="settings-key-row">
+            <button
+              type="button"
+              className="hud-button"
+              disabled={busy === 'connect'}
+              onClick={() => void submit('connect', '')}
+            >
+              {busy === 'connect' ? 'CONNECTING…' : 'CONNECT TELEGRAM'}
+            </button>
+            <small className="settings-key-scope">
+              Starts TDLib with your saved keys, then asks for your phone number (+92…).
+            </small>
+          </div>
+        )}
+
         {/* Step: API keys */}
         {step === 'apikeys' && (
           <p className="inline-status">

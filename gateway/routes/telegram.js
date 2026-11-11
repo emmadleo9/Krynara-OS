@@ -150,18 +150,50 @@ module.exports = {
       res.status(r.status).json(r.body);
     });
 
+    // SETTINGS BUG FIX: the tweb bridge never implemented /api/telegram/proxy,
+    // so every save failed and Settings reset to None on refresh. The bridge
+    // DOES load config/telegram-proxy.json at boot (src/telegram/config.js), so
+    // persist the proxy to that exact file here and serve it back on GET.
+    const TWEB_PROXY_FILE = require('node:path').join(TWEB_DIR, 'config', 'telegram-proxy.json');
+    const PROXY_DEFAULTS = { type: 'none', host: '', port: '', username: '', password: '', secret: '' };
+    const readProxyFile = () => {
+      try {
+        if (require('node:fs').existsSync(TWEB_PROXY_FILE)) {
+          const data = JSON.parse(require('node:fs').readFileSync(TWEB_PROXY_FILE, 'utf8'));
+          return { ...PROXY_DEFAULTS, ...data };
+        }
+      } catch { /* fall through to defaults */ }
+      return { ...PROXY_DEFAULTS };
+    };
+
     app.post('/api/telegram/proxy', async (req, res) => {
-      const r = await forward('/api/telegram/proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(req.body ?? {}),
-      });
-      res.status(r.status).json(r.body);
+      const body = req.body ?? {};
+      const type = ['none', 'socks5', 'mtproto'].includes(body.type) ? body.type : 'none';
+      const proxy = {
+        type,
+        host: String(body.host || ''),
+        port: String(body.port || ''),
+        username: String(body.username || ''),
+        password: String(body.password || ''),
+        secret: String(body.secret || ''),
+      };
+      if (type !== 'none' && (!proxy.host || !proxy.port)) {
+        return res.status(400).json({ error: 'host and port are required for a proxy.' });
+      }
+      if (type === 'mtproto' && !proxy.secret) {
+        return res.status(400).json({ error: 'MTProto proxies need a secret.' });
+      }
+      try {
+        require('node:fs').mkdirSync(require('node:path').dirname(TWEB_PROXY_FILE), { recursive: true });
+        require('node:fs').writeFileSync(TWEB_PROXY_FILE, JSON.stringify(proxy, null, 2));
+      } catch (error) {
+        return res.status(500).json({ error: `Could not write proxy config: ${error instanceof Error ? error.message : String(error)}` });
+      }
+      res.json({ saved: true, proxy, note: 'Saved to config/telegram-proxy.json. Restart the Telegram bridge so TDLib reloads the route.' });
     });
 
-    app.get('/api/telegram/proxy', async (_req, res) => {
-      const r = await forward('/api/telegram/proxy');
-      res.status(r.status).json(r.body);
+    app.get('/api/telegram/proxy', (_req, res) => {
+      res.json(readProxyFile());
     });
 
     app.post('/api/telegram/test-proxy', async (req, res) => {
