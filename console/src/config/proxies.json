@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "autoEnabled": true,
+  "lastRefreshed": null,
+  "proxies": [
+    { "host": "149.154.167.91", "port": 443, "type": "mtproto" },
+    { "host": "149.154.167.40", "port": 443, "type": "mtproto" },
+    { "host": "149.154.167.51", "port": 443, "type": "mtproto" },
+    { "host": "91.108.56.227", "port": 443, "type": "mtproto" },
+    { "host": "91.108.4.10", "port": 443, "type": "mtproto" },
+    { "host": "185.165.12.136", "port": 443, "type": "mtproto" },
+    { "host": "185.165.12.204", "port": 443, "type": "mtproto" },
+    { "host": "149.154.171.5", "port": 443, "type": "mtproto" },
+    { "host": "149.154.171.10", "port": 443, "type": "mtproto" },
+    { "host": "149.154.171.19", "port": 443, "type": "mtproto" }
+  ],
+  "working": [],
+  "note": "Public MTProto proxies. Auto-refreshed weekly. Do not store credentials here."
+}
