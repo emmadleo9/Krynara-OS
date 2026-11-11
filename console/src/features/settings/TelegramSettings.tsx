@@ -487,12 +487,4 @@ export function TelegramSettings() {
       </div>
     </HudFrame>
   );
-
-  // Controlled inputs for phone / code / password (declared at top of component).
-  let phone: string;
-  let code: string;
-  let password: string;
-  function setPhone(v: string) { phone = v; }
-  function setCode(v: string) { code = v; }
-  function setPassword(v: string) { password = v; }
 }
