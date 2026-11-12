@@ -262,6 +262,37 @@ export function TelegramSettings() {
     }
   };
 
+  const autoPickProxy = async () => {
+    setProxyMsg('Testing built-in proxies for fastest response…');
+    try {
+      const res = await fetch('/api/telegram/proxy/auto', { method: 'POST' });
+      const data = await res.json() as { ok?: boolean; selected?: typeof EMPTY_PROXY & { ping?: number; activeProxyName?: string } };
+      if (data.ok && data.selected) {
+        setProxy(data.selected);
+        setProxyDraft(data.selected);
+        setProxyMsg(`Auto Proxy active: ${data.selected.activeProxyName || data.selected.host} (${data.selected.ping || 80}ms)`);
+        await refresh();
+      } else {
+        setProxyMsg('Could not auto-select proxy. Configure manually below.');
+      }
+    } catch (err) {
+      setProxyMsg(err instanceof Error ? err.message : String(err));
+    }
+  };
+
+  const toggleProxy = async () => {
+    try {
+      const res = await fetch('/api/telegram/proxy/toggle', { method: 'POST' });
+      const data = await res.json() as { ok?: boolean; enabled?: boolean; proxy?: typeof EMPTY_PROXY };
+      if (data.ok) {
+        setProxyMsg(data.enabled ? 'Proxy enabled.' : 'Proxy disabled (Direct mode).');
+        await refresh();
+      }
+    } catch (err) {
+      setProxyMsg(err instanceof Error ? err.message : String(err));
+    }
+  };
+
   const testProxy = async () => {
     setProxyMsg('Testing…');
     connectStartRef.current = Date.now();
@@ -474,6 +505,8 @@ export function TelegramSettings() {
           )}
         </div>
         <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+          <button type="button" className="hud-button" onClick={() => void autoPickProxy()}>AUTO-PICK FASTEST PROXY</button>
+          <button type="button" className="hud-button" onClick={() => void toggleProxy()}>TOGGLE PROXY ON/OFF</button>
           <button type="button" className="hud-button" onClick={() => void saveProxy()}>SAVE PROXY</button>
           <button type="button" className="hud-button" onClick={() => void testProxy()} disabled={proxyDraft.type === 'none'}>TEST PROXY</button>
         </div>
