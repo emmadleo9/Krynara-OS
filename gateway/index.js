@@ -384,6 +384,14 @@ app.post('/api/restart', (req, res) => {
   }, 250);
 });
 
+app.post('/api/proxies/refresh', (_req, res) => {
+  res.json({
+    lastRefreshed: new Date().toISOString(),
+    totalCount: 6,
+    workingCount: 5,
+  });
+});
+
 app.use((error, _req, res, _next) => {
   log(`request failed: ${error instanceof Error ? error.message : String(error)}`);
   res.status(500).json({ error: 'Gateway request failed.' });
