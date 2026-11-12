@@ -7,8 +7,22 @@ import { HudFrame } from '@/components/hud';
  * shows the real error returned by the backend.
  */
 
-type TgChat = { id: string; title: string; unread: number; lastMessage?: string | null };
-type TgMessage = { id: string; outgoing: boolean; text: string; at: string; sender?: string };
+type TgChat = {
+  id: string;
+  title: string;
+  type?: string;
+  unread_count?: number;
+  last_message?: { text?: string; date?: number; outgoing?: boolean } | null;
+};
+type TgMessage = {
+  id: string;
+  outgoing: boolean;
+  text: string;
+  date: number;
+  sender?: string;
+  senderName?: string;
+  pending?: boolean;
+};
 type TgStatus = {
   configured: boolean;
   authorized: boolean;
@@ -39,21 +53,38 @@ export function TelegramLive() {
   const [sending, setSending] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
+  const [chatsLoading, setChatsLoading] = useState(false);
+
+  const mapChat = (c: TgChat): TgChat => ({
+    id: String(c.id),
+    title: c.title || `Chat ${c.id}`,
+    type: c.type,
+    unread_count: c.unread_count || 0,
+    last_message: c.last_message ?? null,
+  });
+
   const loadChats = useCallback(async () => {
+    setChatsLoading(true);
     try {
       const res = await fetch('/api/telegram/chats');
       const body = await res.json() as { chats?: TgChat[]; error?: string; state?: string };
+      console.log('[TG] getChats response:', body);
       if (!res.ok) {
         setChats([]);
         setBridgeError(body.error || `Telegram backend returned HTTP ${res.status}${body.state ? ` (auth state: ${body.state})` : ''}`);
         return;
       }
       setBridgeError('');
-      setChats(body.chats ?? []);
-      setActiveId((current) => current || body.chats?.[0]?.id || '');
+      const mapped = (body.chats ?? []).map(mapChat);
+      console.log(`[TG] ${mapped.length} chats loaded`);
+      setChats(mapped);
+      setActiveId((current) => current || mapped[0]?.id || '');
     } catch (err) {
+      console.error('[TG] getChats failed:', err);
       setChats([]);
       setBridgeError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setChatsLoading(false);
     }
   }, []);
 
@@ -62,14 +93,16 @@ export function TelegramLive() {
     try {
       const res = await fetch(`/api/telegram/messages/${encodeURIComponent(chatId)}`);
       const body = await res.json() as { messages?: TgMessage[]; error?: string };
+      console.log(`[TG] getChatHistory(${chatId}):`, body.error || `${body.messages?.length ?? 0} messages`);
       if (!res.ok) {
         setMessages([]);
         setBridgeError(body.error || `HTTP ${res.status}`);
         return;
       }
       setBridgeError('');
-      setMessages(body.messages ?? []);
+      setMessages((body.messages ?? []).map((m) => ({ ...m, date: m.date || 0 })));
     } catch (err) {
+      console.error('[TG] getChatHistory failed:', err);
       setBridgeError(err instanceof Error ? err.message : String(err));
     }
   }, []);
@@ -97,7 +130,12 @@ export function TelegramLive() {
   }, []);
 
   useEffect(() => {
-    if (status?.authorized) void loadChats();
+    if (!status?.authorized) return;
+    void loadChats();
+    // Live list updates: poll while authorized — updateChatLastMessage /
+    // updateNewMessage land in the bridge cache and show up here within 5 s.
+    const timer = window.setInterval(() => void loadChats(), 5000);
+    return () => window.clearInterval(timer);
   }, [status?.authorized, loadChats]);
 
   useEffect(() => {
@@ -117,18 +155,29 @@ export function TelegramLive() {
     if (!text || !activeId) return;
     setSending(true);
     setSendError('');
+    // Show the message immediately while the real sendMessage is in flight.
+    const tempId = `pending-${Date.now()}`;
+    setMessages((prev) => [...prev, { id: tempId, outgoing: true, text, date: Math.floor(Date.now() / 1000), pending: true }]);
     try {
       const res = await fetch('/api/telegram/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ chatId: activeId, text }),
       });
-      const body = await res.json() as { error?: string };
+      const body = await res.json() as { error?: string; message?: TgMessage };
       if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
       setDraft('');
+      // Optimistically show the sent message immediately, then reconcile
+      // with the real TDLib history (which carries the canonical id/status).
+      setMessages((prev) => [
+        ...prev.filter((m) => !m.pending),
+        ...(body.message ? [{ ...body.message, pending: false }] : []),
+      ]);
       await loadMessages(activeId);
       await loadChats();
     } catch (err) {
+      // Drop the optimistic bubble only when the send really failed.
+      setMessages((prev) => prev.filter((m) => m.id !== tempId));
       setSendError(err instanceof Error ? err.message : String(err));
     } finally {
       setSending(false);
@@ -180,19 +229,33 @@ export function TelegramLive() {
             key={chat.id}
             onClick={() => { setActiveId(chat.id); setMessages([]); }}
           >
-            <span className="chat-list-title">{chat.title}{chat.unread > 0 && <span className="unread-dot" />}</span>
-            <span className="chat-list-preview">{chat.lastMessage || ' '}</span>
+            <span className="chat-list-title">
+              {chat.title}
+              {(chat.unread_count ?? 0) > 0 && <span className="unread-badge">{chat.unread_count}</span>}
+            </span>
+            <span className="chat-list-preview">
+              {chat.last_message?.date ? new Date(chat.last_message.date * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' · ' : ''}
+              {chat.last_message?.text || ' '}
+            </span>
           </button>
         ))}
-        {chats.length === 0 && <p className="social-local-note">{bridgeError || 'LOADING CHATS…'}</p>}
+        {chatsLoading && <p className="social-local-note">Loading your chats…</p>}
+        {!chatsLoading && chats.length === 0 && !bridgeError && (
+          <p className="social-local-note">No chats found. Check getChats response in console.</p>
+        )}
+        {!chatsLoading && chats.length === 0 && bridgeError && <p className="social-local-note">{bridgeError}</p>}
       </HudFrame>
 
       <HudFrame title={chats.find((c) => c.id === activeId)?.title ?? 'TELEGRAM'} className="social-chat">
         <div className="chat-messages" aria-live="polite" ref={scrollerRef}>
           {messages.map((message) => (
             <div key={message.id} className={message.outgoing ? 'chat-bubble outgoing' : 'chat-bubble'}>
+              {!message.outgoing && message.senderName && <div className="chat-sender">{message.senderName}</div>}
               <div>{message.text}</div>
-              <time>{message.sender ? `${message.sender} · ` : ''}{message.at}</time>
+              <time>
+                {message.date ? new Date(message.date * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                {message.outgoing ? (message.pending ? ' · sending…' : ' · sent ✓') : ''}
+              </time>
             </div>
           ))}
           {activeId && messages.length === 0 && <p className="social-local-note">NO MESSAGES YET / LOADING…</p>}

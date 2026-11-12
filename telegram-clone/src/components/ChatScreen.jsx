@@ -80,7 +80,7 @@ export default function ChatScreen({ me, peer, onBack }) {
           })
           // If message is incoming and I'm viewing this chat -> mark read immediately
           if (m.receiver_id === me.id) {
-            supabase.from('messages').update({ read: true }).eq('id', m.id).then(() => {})
+            supabase.from('messages').update({ read: true }).eq('id', m.id).then(() => { })
             setMessages((prev) =>
               prev.map((x) => (x.id === m.id ? { ...x, read: true } : x)),
             )
@@ -236,11 +236,10 @@ export default function ChatScreen({ me, peer, onBack }) {
               return (
                 <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'} ${grouped ? '' : 'mt-2'}`}>
                   <div
-                    className={`max-w-[75%] md:max-w-[55%] px-3 py-1.5 text-[15px] leading-snug rounded-2xl break-words whitespace-pre-wrap ${
-                      mine
+                    className={`max-w-[75%] md:max-w-[55%] px-3 py-1.5 text-[15px] leading-snug rounded-2xl break-words whitespace-pre-wrap ${mine
                         ? 'bg-tg-mine rounded-br-md'
                         : 'bg-tg-theirs rounded-bl-md'
-                    }`}
+                      }`}
                   >
                     {m.text}
                     <span className="inline-flex items-center gap-1 align-bottom float-right ml-2 mt-0.5">

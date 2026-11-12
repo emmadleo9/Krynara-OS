@@ -1,4 +1,4 @@
-// One-off: regenerate console/public PWA icons + favicon from the official logo.
+ // One-off: regenerate console/public PWA icons + favicon from the official logo.
 const path = require('node:path');
 const fs = require('node:fs');
 const sharp = require(path.join(__dirname, '..', 'gateway', 'node_modules', 'sharp'));

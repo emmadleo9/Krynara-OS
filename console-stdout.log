@@ -1,0 +1,18 @@
+
+> open-bsp-ui@4.0.1.16 dev:fast
+> node ../scripts/start-singularity.js
+
+[Krynara-OS] Starting Ollama local AI service...
+[Krynara-OS] Local AI service is ready at http://127.0.0.1:11434.
+[Krynara-OS] Telegram bridge is ready on http://127.0.0.1:2787.
+
+  [32m[1mROLLDOWN-VITE[22m v7.2.2[39m  [2mready in [0m[1m7647[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://100.116.4.49:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.56.1:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://192.168.18.144:[1m5173[22m/[39m
+[Krynara-OS] Krynara-OS v0.4 startup complete.
+[Krynara-OS] Console: http://localhost:5173
+[Krynara-OS] Local gateway: http://127.0.0.1:2785 (proxied via /api)
+[Krynara-OS] WhatsApp, World View feeds, and AI routes are ready through the local gateway.

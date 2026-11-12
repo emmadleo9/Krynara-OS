@@ -40,7 +40,7 @@ export default function Login({ onLogin }) {
       <form onSubmit={submit} className="w-full max-w-sm bg-tg-sidebar rounded-xl p-8 space-y-5 shadow-2xl">
         <div className="flex flex-col items-center gap-3">
           <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl"
-               style={{ background: 'linear-gradient(135deg,#2AABEE,#229ED9)' }}>
+            style={{ background: 'linear-gradient(135deg,#2AABEE,#229ED9)' }}>
             <svg width="40" height="40" viewBox="0 0 100 100" fill="white">
               <path d="M22 49l52-21-9 44-13-9-9 9-2-13z" />
             </svg>

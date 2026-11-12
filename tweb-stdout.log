@@ -1,0 +1,273 @@
+[SocialHub TG] Social Hub Telegram web bridge on http://127.0.0.1:2787
+[telegram auth] Setting TDLib parameters...
+[SocialHub TG] Setting TDLib parameters...
+[telegram auth] Logged in as authorized user
+[SocialHub TG] Logged in as authorized user
+[telegram auth] Connected as Emmad Safdar (@no-username)
+[SocialHub TG] Connected as Emmad Safdar (@no-username)
+[telegram chats] Fetching chat list (limit 50)...
+[SocialHub TG] Fetching chat list (limit 50)...
+[telegram chats] getChats response: {"@type":"chats","total_count":379,"chat_ids":[7818886246,8376967651,6226207527,-1001778602049,5477348811,-1001566233688,-1002643460174,-1002321303406,-1003177449261,-1001683698908,-1001508192604,-1002925465769,-1001387000365,-1002395908220,-1003270458932,-1002697801960,-1003448692474,-1003373768826,-1001307900913,-1001395363861,-1002256914266,-1003291824306,-1002791247865,-1001123464890,-1003811998632,-1001270092531,-1003077577221,-1001996621417,-1001303757981,-1001806767670,-1003468954182,-1003698813612,-1001422855927,-1001910148331,777000,-1003301206967,-1003728585841,-1001246554564,-1001918214386,-1001209244960,-1002931932950,-1002142159234,-1003643829801,-1002159512391,-1002641847056,-1003369900215,-1001883162327,-1002364434889,-1003616233972,-1002293079413],"@extra":"r4"}
+[SocialHub TG] getChats response: {"@type":"chats","total_count":379,"chat_ids":[7818886246,8376967651,6226207527,-1001778602049,5477348811,-1001566233688,-1002643460174,-1002321303406,-1003177449261,-1001683698908,-1001508192604,-1002925465769,-1001387000365,-1002395908220,-1003270458932,-1002697801960,-1003448692474,-1003373768826,-1001307900913,-1001395363861,-1002256914266,-1003291824306,-1002791247865,-1001123464890,-1003811998632,-1001270092531,-1003077577221,-1001996621417,-1001303757981,-1001806767670,-1003468954182,-1003698813612,-1001422855927,-1001910148331,777000,-1003301206967,-1003728585841,-1001246554564,-1001918214386,-1001209244960,-1002931932950,-1002142159234,-1003643829801,-1002159512391,-1002641847056,-1003369900215,-1001883162327,-1002364434889,-1003616233972,-1002293079413],"@extra":"r4"}
+[telegram chats] getChats returned 50 chat ids
+[SocialHub TG] getChats returned 50 chat ids
+[telegram chats] getChat(7818886246): title="Emmad Safdar" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(7818886246): title="Emmad Safdar" type=chatTypePrivate unread=0
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram chats] getChat(6226207527): title="WoW" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(6226207527): title="WoW" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1001778602049): title="Marvel Cinematic Universe @AllMoviesByMibu3" type=chatTypeSupergroup unread=63
+[SocialHub TG] getChat(-1001778602049): title="Marvel Cinematic Universe @AllMoviesByMibu3" type=chatTypeSupergroup unread=63
+[telegram chats] getChat(5477348811): title="RED X Bot 2.0" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(5477348811): title="RED X Bot 2.0" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1001566233688): title="Web_series_Bot" type=chatTypeSupergroup unread=31282
+[SocialHub TG] getChat(-1001566233688): title="Web_series_Bot" type=chatTypeSupergroup unread=31282
+[telegram chats] getChat(-1002643460174): title="(𝟮) 𝗦𝗘𝗔𝗥𝗖𝗛 𝗠𝗢𝗩𝗜𝗘𝗦! 𝗩𝗘𝗡𝗢𝗠 𝗦𝗧𝗢𝗡𝗘!" type=chatTypeSupergroup unread=119
+[SocialHub TG] getChat(-1002643460174): title="(𝟮) 𝗦𝗘𝗔𝗥𝗖𝗛 𝗠𝗢𝗩𝗜𝗘𝗦! 𝗩𝗘𝗡𝗢𝗠 𝗦𝗧𝗢𝗡𝗘!" type=chatTypeSupergroup unread=119
+[telegram chats] getChat(-1002321303406): title="𝐖𝐎𝐑𝐋𝐃 𝐂𝐇𝐀𝐓" type=chatTypeSupergroup unread=218
+[SocialHub TG] getChat(-1002321303406): title="𝐖𝐎𝐑𝐋𝐃 𝐂𝐇𝐀𝐓" type=chatTypeSupergroup unread=218
+[telegram chats] getChat(-1003177449261): title="Movies Group 4.0 || @CineHUD" type=chatTypeSupergroup unread=23
+[SocialHub TG] getChat(-1003177449261): title="Movies Group 4.0 || @CineHUD" type=chatTypeSupergroup unread=23
+[telegram chats] getChat(-1001683698908): title="Support Group || M2LiNKS™" type=chatTypeSupergroup unread=23
+[SocialHub TG] getChat(-1001683698908): title="Support Group || M2LiNKS™" type=chatTypeSupergroup unread=23
+[telegram chats] getChat(-1001508192604): title="JayBee Bots Support" type=chatTypeSupergroup unread=300
+[SocialHub TG] getChat(-1001508192604): title="JayBee Bots Support" type=chatTypeSupergroup unread=300
+[telegram chats] getChat(-1002925465769): title="Movies Group 5.0 || @CineHUD" type=chatTypeSupergroup unread=291
+[SocialHub TG] getChat(-1002925465769): title="Movies Group 5.0 || @CineHUD" type=chatTypeSupergroup unread=291
+[telegram chats] getChat(-1001387000365): title="Ruffg Movies | Ruffg Series" type=chatTypeSupergroup unread=67045
+[SocialHub TG] getChat(-1001387000365): title="Ruffg Movies | Ruffg Series" type=chatTypeSupergroup unread=67045
+[telegram chats] getChat(-1002395908220): title="Avici" type=chatTypeSupergroup unread=799
+[SocialHub TG] getChat(-1002395908220): title="Avici" type=chatTypeSupergroup unread=799
+[telegram chats] getChat(-1003270458932): title="Avici" type=chatTypeSupergroup unread=10
+[SocialHub TG] getChat(-1003270458932): title="Avici" type=chatTypeSupergroup unread=10
+[telegram chats] getChat(-1002697801960): title="Mega Cart Deals 🛍🛒💰" type=chatTypeSupergroup unread=74924
+[SocialHub TG] getChat(-1002697801960): title="Mega Cart Deals 🛍🛒💰" type=chatTypeSupergroup unread=74924
+[telegram chats] getChat(-1003448692474): title="Avici" type=chatTypeSupergroup unread=18
+[SocialHub TG] getChat(-1003448692474): title="Avici" type=chatTypeSupergroup unread=18
+[telegram chats] getChat(-1003373768826): title="ɴᴀᴍᴇʟᴇss ᴛᴇᴄʜ ɪs ʙᴀᴄᴋ" type=chatTypeSupergroup unread=6422
+[SocialHub TG] getChat(-1003373768826): title="ɴᴀᴍᴇʟᴇss ᴛᴇᴄʜ ɪs ʙᴀᴄᴋ" type=chatTypeSupergroup unread=6422
+[telegram chats] getChat(-1001307900913): title="Premium Free Courses" type=chatTypeSupergroup unread=23322
+[SocialHub TG] getChat(-1001307900913): title="Premium Free Courses" type=chatTypeSupergroup unread=23322
+[telegram chats] getChat(-1001395363861): title="Proxy MTProto" type=chatTypeSupergroup unread=1103
+[SocialHub TG] getChat(-1001395363861): title="Proxy MTProto" type=chatTypeSupergroup unread=1103
+[telegram chats] getChat(-1002256914266): title="Avici" type=chatTypeSupergroup unread=10
+[SocialHub TG] getChat(-1002256914266): title="Avici" type=chatTypeSupergroup unread=10
+[telegram chats] getChat(-1003291824306): title="𝐗 -♡︎𝐍𝐢𝐜𝐤 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" type=chatTypeSupergroup unread=55
+[SocialHub TG] getChat(-1003291824306): title="𝐗 -♡︎𝐍𝐢𝐜𝐤 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" type=chatTypeSupergroup unread=55
+[telegram chats] getChat(-1002791247865): title="🝛꯭𝐈𝛕ᷟ𝚣⃪ꙴ𝖺َᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝𝐍𝚯𝐗" type=chatTypeSupergroup unread=2475
+[SocialHub TG] getChat(-1002791247865): title="🝛꯭𝐈𝛕ᷟ𝚣⃪ꙴ𝖺َᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝𝐍𝚯𝐗" type=chatTypeSupergroup unread=2475
+[telegram chats] getChat(-1001123464890): title="Mothership" type=chatTypeSupergroup unread=1402
+[SocialHub TG] getChat(-1001123464890): title="Mothership" type=chatTypeSupergroup unread=1402
+[telegram chats] getChat(-1003811998632): title="JustMTProxy" type=chatTypeSupergroup unread=1239
+[SocialHub TG] getChat(-1003811998632): title="JustMTProxy" type=chatTypeSupergroup unread=1239
+[telegram chats] getChat(-1001270092531): title="Proxy Stars | پروکسی" type=chatTypeSupergroup unread=558
+[SocialHub TG] getChat(-1001270092531): title="Proxy Stars | پروکسی" type=chatTypeSupergroup unread=558
+[telegram chats] getChat(-1003077577221): title="Cinefy Latest Releases" type=chatTypeSupergroup unread=54
+[SocialHub TG] getChat(-1003077577221): title="Cinefy Latest Releases" type=chatTypeSupergroup unread=54
+[telegram chats] getChat(-1001996621417): title="My Fault 2 • Your Fault • in Hindi" type=chatTypeSupergroup unread=1
+[SocialHub TG] getChat(-1001996621417): title="My Fault 2 • Your Fault • in Hindi" type=chatTypeSupergroup unread=1
+[telegram chats] getChat(-1001303757981): title="Series 2022 Requests" type=chatTypeSupergroup unread=11252
+[SocialHub TG] getChat(-1001303757981): title="Series 2022 Requests" type=chatTypeSupergroup unread=11252
+[telegram chats] getChat(-1001806767670): title="Anime | Chat" type=chatTypeSupergroup unread=16757
+[SocialHub TG] getChat(-1001806767670): title="Anime | Chat" type=chatTypeSupergroup unread=16757
+[telegram chats] getChat(-1003468954182): title="TRICKS MASTAR NUMBER CHENNEL" type=chatTypeSupergroup unread=585
+[SocialHub TG] getChat(-1003468954182): title="TRICKS MASTAR NUMBER CHENNEL" type=chatTypeSupergroup unread=585
+[telegram chats] getChat(-1003698813612): title="Xeon Bot Inc. Chat" type=chatTypeSupergroup unread=46982
+[SocialHub TG] getChat(-1003698813612): title="Xeon Bot Inc. Chat" type=chatTypeSupergroup unread=46982
+[telegram chats] getChat(-1001422855927): title="Anime Bite" type=chatTypeSupergroup unread=45052
+[SocialHub TG] getChat(-1001422855927): title="Anime Bite" type=chatTypeSupergroup unread=45052
+[telegram chats] getChat(-1001910148331): title="هارمه" type=chatTypeSupergroup unread=30
+[SocialHub TG] getChat(-1001910148331): title="هارمه" type=chatTypeSupergroup unread=30
+[telegram chats] getChat(777000): title="Telegram" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(777000): title="Telegram" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1003301206967): title="IBOX TV" type=chatTypeSupergroup unread=100
+[SocialHub TG] getChat(-1003301206967): title="IBOX TV" type=chatTypeSupergroup unread=100
+[telegram chats] getChat(-1003728585841): title="Ruffg Movies" type=chatTypeSupergroup unread=686
+[SocialHub TG] getChat(-1003728585841): title="Ruffg Movies" type=chatTypeSupergroup unread=686
+[telegram chats] getChat(-1001246554564): title="CLIMAXXX ISLAND✨💧" type=chatTypeSupergroup unread=272
+[SocialHub TG] getChat(-1001246554564): title="CLIMAXXX ISLAND✨💧" type=chatTypeSupergroup unread=272
+[telegram chats] getChat(-1001918214386): title="Web Drama" type=chatTypeSupergroup unread=351
+[SocialHub TG] getChat(-1001918214386): title="Web Drama" type=chatTypeSupergroup unread=351
+[telegram chats] getChat(-1001209244960): title="Anime DataBase | Tokyo Revengers: War of the Three Titans Arc" type=chatTypeSupergroup unread=1373
+[SocialHub TG] getChat(-1001209244960): title="Anime DataBase | Tokyo Revengers: War of the Three Titans Arc" type=chatTypeSupergroup unread=1373
+[telegram chats] getChat(-1002931932950): title="🈳 My Anime TV 🈯🗽™️" type=chatTypeSupergroup unread=1658
+[SocialHub TG] getChat(-1002931932950): title="🈳 My Anime TV 🈯🗽™️" type=chatTypeSupergroup unread=1658
+[telegram chats] getChat(-1002142159234): title="Avici" type=chatTypeSupergroup unread=29160
+[SocialHub TG] getChat(-1002142159234): title="Avici" type=chatTypeSupergroup unread=29160
+[telegram chats] getChat(-1003643829801): title="LIONEL PCS" type=chatTypeSupergroup unread=1771
+[SocialHub TG] getChat(-1003643829801): title="LIONEL PCS" type=chatTypeSupergroup unread=1771
+[telegram chats] getChat(-1002159512391): title="MR ELIKEM TIPS GH" type=chatTypeSupergroup unread=982
+[SocialHub TG] getChat(-1002159512391): title="MR ELIKEM TIPS GH" type=chatTypeSupergroup unread=982
+[telegram chats] getChat(-1002641847056): title="ICON 𝕋𝕍" type=chatTypeSupergroup unread=31
+[SocialHub TG] getChat(-1002641847056): title="ICON 𝕋𝕍" type=chatTypeSupergroup unread=31
+[telegram chats] getChat(-1003369900215): title="Obot Update 🥱" type=chatTypeSupergroup unread=118
+[SocialHub TG] getChat(-1003369900215): title="Obot Update 🥱" type=chatTypeSupergroup unread=118
+[telegram chats] getChat(-1001883162327): title="Max Se..ries" type=chatTypeSupergroup unread=15
+[SocialHub TG] getChat(-1001883162327): title="Max Se..ries" type=chatTypeSupergroup unread=15
+[telegram chats] getChat(-1002364434889): title="Tech world 401 official" type=chatTypeSupergroup unread=760
+[SocialHub TG] getChat(-1002364434889): title="Tech world 401 official" type=chatTypeSupergroup unread=760
+[telegram chats] getChat(-1003616233972): title="🌚🌷RABBIT XMD" type=chatTypeSupergroup unread=9185
+[SocialHub TG] getChat(-1003616233972): title="🌚🌷RABBIT XMD" type=chatTypeSupergroup unread=9185
+[telegram chats] getChat(-1002293079413): title="فیلم درام | Formonix Drama" type=chatTypeSupergroup unread=590
+[SocialHub TG] getChat(-1002293079413): title="فیلم درام | Formonix Drama" type=chatTypeSupergroup unread=590
+[telegram messages] Fetching history for chat -1001566233688 (limit 50)...
+[SocialHub TG] Fetching history for chat -1001566233688 (limit 50)...
+[telegram chats] getChat(9186465821) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(9186465821) failed: TDLib error: Chat not found (code 400)
+[telegram chats] Fetching chat list (limit 50)...
+[SocialHub TG] Fetching chat list (limit 50)...
+[telegram chats] getChats response: {"@type":"chats","total_count":379,"chat_ids":[7818886246,8376967651,6226207527,-1001778602049,5477348811,-1002925465769,-1001566233688,-1003291824306,-1003177449261,-1001387000365,-1002256914266,-1003369900215,-1003301206967,-1001303757981,-1002395908220,-1003270458932,-1003448692474,-1001123464890,-1001683698908,-1002697801960,-1001307900913,-1001091853463,-1001395363861,-1002643460174,-1001303646043,-1001380410543,-1001806767670,-1002321303406,-1003616233972,-1001246554564,-1003811998632,-1001883162327,8331475319,8233993550,-1002931932950,-1001996437356,-1003698813612,-1003373768826,-1002791247865,-1001270092531,-1003077577221,-1001996621417,-1001422855927,-1001910148331,777000,-1003728585841,-1001918214386,-1001209244960,-1002142159234,-1003643829801],"@extra":"r57"}
+[SocialHub TG] getChats response: {"@type":"chats","total_count":379,"chat_ids":[7818886246,8376967651,6226207527,-1001778602049,5477348811,-1002925465769,-1001566233688,-1003291824306,-1003177449261,-1001387000365,-1002256914266,-1003369900215,-1003301206967,-1001303757981,-1002395908220,-1003270458932,-1003448692474,-1001123464890,-1001683698908,-1002697801960,-1001307900913,-1001091853463,-1001395363861,-1002643460174,-1001303646043,-1001380410543,-1001806767670,-1002321303406,-1003616233972,-1001246554564,-1003811998632,-1001883162327,8331475319,8233993550,-1002931932950,-1001996437356,-1003698813612,-1003373768826,-1002791247865,-1001270092531,-1003077577221,-1001996621417,-1001422855927,-1001910148331,777000,-1003728585841,-1001918214386,-1001209244960,-1002142159234,-1003643829801],"@extra":"r57"}
+[telegram chats] getChats returned 50 chat ids
+[SocialHub TG] getChats returned 50 chat ids
+[telegram chats] getChat(7818886246): title="Emmad Safdar" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(7818886246): title="Emmad Safdar" type=chatTypePrivate unread=0
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram chats] getChat(6226207527): title="WoW" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(6226207527): title="WoW" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1001778602049): title="Marvel Cinematic Universe @AllMoviesByMibu3" type=chatTypeSupergroup unread=63
+[SocialHub TG] getChat(-1001778602049): title="Marvel Cinematic Universe @AllMoviesByMibu3" type=chatTypeSupergroup unread=63
+[telegram chats] getChat(5477348811): title="RED X Bot 2.0" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(5477348811): title="RED X Bot 2.0" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1002925465769): title="Movies Group 5.0 || @CineHUD" type=chatTypeSupergroup unread=284
+[SocialHub TG] getChat(-1002925465769): title="Movies Group 5.0 || @CineHUD" type=chatTypeSupergroup unread=284
+[telegram chats] getChat(-1001566233688): title="Web_series_Bot" type=chatTypeSupergroup unread=31666
+[SocialHub TG] getChat(-1001566233688): title="Web_series_Bot" type=chatTypeSupergroup unread=31666
+[telegram chats] getChat(-1003291824306): title="𝐗 -♡︎𝐍𝐢𝐜𝐤 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" type=chatTypeSupergroup unread=68
+[SocialHub TG] getChat(-1003291824306): title="𝐗 -♡︎𝐍𝐢𝐜𝐤 𝐎𝐟𝐟𝐢𝐜𝐢𝐚𝐥" type=chatTypeSupergroup unread=68
+[telegram chats] getChat(-1003177449261): title="Movies Group 4.0 || @CineHUD" type=chatTypeSupergroup unread=23
+[SocialHub TG] getChat(-1003177449261): title="Movies Group 4.0 || @CineHUD" type=chatTypeSupergroup unread=23
+[telegram chats] getChat(-1001387000365): title="Ruffg Movies | Ruffg Series" type=chatTypeSupergroup unread=67089
+[SocialHub TG] getChat(-1001387000365): title="Ruffg Movies | Ruffg Series" type=chatTypeSupergroup unread=67089
+[telegram chats] getChat(-1002256914266): title="Avici" type=chatTypeSupergroup unread=10
+[SocialHub TG] getChat(-1002256914266): title="Avici" type=chatTypeSupergroup unread=10
+[telegram chats] getChat(-1003369900215): title="Obot Update 🥱" type=chatTypeSupergroup unread=119
+[SocialHub TG] getChat(-1003369900215): title="Obot Update 🥱" type=chatTypeSupergroup unread=119
+[telegram chats] getChat(-1003301206967): title="IBOX TV" type=chatTypeSupergroup unread=102
+[SocialHub TG] getChat(-1003301206967): title="IBOX TV" type=chatTypeSupergroup unread=102
+[telegram chats] getChat(-1001303757981): title="Series 2022 Requests" type=chatTypeSupergroup unread=11260
+[SocialHub TG] getChat(-1001303757981): title="Series 2022 Requests" type=chatTypeSupergroup unread=11260
+[telegram chats] getChat(-1002395908220): title="Avici" type=chatTypeSupergroup unread=799
+[SocialHub TG] getChat(-1002395908220): title="Avici" type=chatTypeSupergroup unread=799
+[telegram chats] getChat(-1003270458932): title="Avici" type=chatTypeSupergroup unread=10
+[SocialHub TG] getChat(-1003270458932): title="Avici" type=chatTypeSupergroup unread=10
+[telegram chats] getChat(-1003448692474): title="Avici" type=chatTypeSupergroup unread=18
+[SocialHub TG] getChat(-1003448692474): title="Avici" type=chatTypeSupergroup unread=18
+[telegram chats] getChat(-1001123464890): title="Mothership" type=chatTypeSupergroup unread=1405
+[SocialHub TG] getChat(-1001123464890): title="Mothership" type=chatTypeSupergroup unread=1405
+[telegram chats] getChat(-1001683698908): title="Support Group || M2LiNKS™" type=chatTypeSupergroup unread=13
+[SocialHub TG] getChat(-1001683698908): title="Support Group || M2LiNKS™" type=chatTypeSupergroup unread=13
+[telegram chats] getChat(-1002697801960): title="Mega Cart Deals 🛍🛒💰" type=chatTypeSupergroup unread=74935
+[SocialHub TG] getChat(-1002697801960): title="Mega Cart Deals 🛍🛒💰" type=chatTypeSupergroup unread=74935
+[telegram chats] getChat(-1001307900913): title="Premium Free Courses" type=chatTypeSupergroup unread=23322
+[SocialHub TG] getChat(-1001307900913): title="Premium Free Courses" type=chatTypeSupergroup unread=23322
+[telegram chats] getChat(-1001091853463): title="Proxy MTProto | پروکسی" type=chatTypeSupergroup unread=315
+[SocialHub TG] getChat(-1001091853463): title="Proxy MTProto | پروکسی" type=chatTypeSupergroup unread=315
+[telegram chats] getChat(-1001395363861): title="Proxy MTProto" type=chatTypeSupergroup unread=1106
+[SocialHub TG] getChat(-1001395363861): title="Proxy MTProto" type=chatTypeSupergroup unread=1106
+[telegram chats] getChat(-1002643460174): title="(𝟮) 𝗦𝗘𝗔𝗥𝗖𝗛 𝗠𝗢𝗩𝗜𝗘𝗦! 𝗩𝗘𝗡𝗢𝗠 𝗦𝗧𝗢𝗡𝗘!" type=chatTypeSupergroup unread=119
+[SocialHub TG] getChat(-1002643460174): title="(𝟮) 𝗦𝗘𝗔𝗥𝗖𝗛 𝗠𝗢𝗩𝗜𝗘𝗦! 𝗩𝗘𝗡𝗢𝗠 𝗦𝗧𝗢𝗡𝗘!" type=chatTypeSupergroup unread=119
+[telegram chats] getChat(-1001303646043): title="Proxy Active |پروکسی فعال" type=chatTypeSupergroup unread=545
+[SocialHub TG] getChat(-1001303646043): title="Proxy Active |پروکسی فعال" type=chatTypeSupergroup unread=545
+[telegram chats] getChat(-1001380410543): title="MARVEL ACADEMY LC" type=chatTypeSupergroup unread=3387
+[SocialHub TG] getChat(-1001380410543): title="MARVEL ACADEMY LC" type=chatTypeSupergroup unread=3387
+[telegram chats] getChat(-1001806767670): title="Anime | Chat" type=chatTypeSupergroup unread=16758
+[SocialHub TG] getChat(-1001806767670): title="Anime | Chat" type=chatTypeSupergroup unread=16758
+[telegram chats] getChat(-1002321303406): title="𝐖𝐎𝐑𝐋𝐃 𝐂𝐇𝐀𝐓" type=chatTypeSupergroup unread=224
+[SocialHub TG] getChat(-1002321303406): title="𝐖𝐎𝐑𝐋𝐃 𝐂𝐇𝐀𝐓" type=chatTypeSupergroup unread=224
+[telegram chats] getChat(-1003616233972): title="🌚🌷RABBIT XMD" type=chatTypeSupergroup unread=9185
+[SocialHub TG] getChat(-1003616233972): title="🌚🌷RABBIT XMD" type=chatTypeSupergroup unread=9185
+[telegram chats] getChat(-1001246554564): title="CLIMAXXX ISLAND✨💧" type=chatTypeSupergroup unread=273
+[SocialHub TG] getChat(-1001246554564): title="CLIMAXXX ISLAND✨💧" type=chatTypeSupergroup unread=273
+[telegram chats] getChat(-1003811998632): title="JustMTProxy" type=chatTypeSupergroup unread=1240
+[SocialHub TG] getChat(-1003811998632): title="JustMTProxy" type=chatTypeSupergroup unread=1240
+[telegram chats] getChat(-1001883162327): title="Max Se..ries" type=chatTypeSupergroup unread=18
+[SocialHub TG] getChat(-1001883162327): title="Max Se..ries" type=chatTypeSupergroup unread=18
+[telegram chats] getChat(8331475319): title="Scatty 1" type=chatTypePrivate unread=143
+[SocialHub TG] getChat(8331475319): title="Scatty 1" type=chatTypePrivate unread=143
+[telegram chats] getChat(8233993550): title="Scatty 2" type=chatTypePrivate unread=48
+[SocialHub TG] getChat(8233993550): title="Scatty 2" type=chatTypePrivate unread=48
+[telegram chats] getChat(-1002931932950): title="🈳 My Anime TV 🈯🗽™️" type=chatTypeSupergroup unread=1659
+[SocialHub TG] getChat(-1002931932950): title="🈳 My Anime TV 🈯🗽™️" type=chatTypeSupergroup unread=1659
+[telegram chats] getChat(-1001996437356): title="Formonix | فورمونیکس" type=chatTypeSupergroup unread=28
+[SocialHub TG] getChat(-1001996437356): title="Formonix | فورمونیکس" type=chatTypeSupergroup unread=28
+[telegram chats] getChat(-1003698813612): title="Xeon Bot Inc. Chat" type=chatTypeSupergroup unread=46983
+[SocialHub TG] getChat(-1003698813612): title="Xeon Bot Inc. Chat" type=chatTypeSupergroup unread=46983
+[telegram chats] getChat(-1003373768826): title="ɴᴀᴍᴇʟᴇss ᴛᴇᴄʜ ɪs ʙᴀᴄᴋ" type=chatTypeSupergroup unread=6421
+[SocialHub TG] getChat(-1003373768826): title="ɴᴀᴍᴇʟᴇss ᴛᴇᴄʜ ɪs ʙᴀᴄᴋ" type=chatTypeSupergroup unread=6421
+[telegram chats] getChat(-1002791247865): title="🝛꯭𝐈𝛕ᷟ𝚣⃪ꙴ𝖺َᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝𝐍𝚯𝐗" type=chatTypeSupergroup unread=2475
+[SocialHub TG] getChat(-1002791247865): title="🝛꯭𝐈𝛕ᷟ𝚣⃪ꙴ𝖺َᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝ᡃ⃝𝐍𝚯𝐗" type=chatTypeSupergroup unread=2475
+[telegram chats] getChat(-1001270092531): title="Proxy Stars | پروکسی" type=chatTypeSupergroup unread=558
+[SocialHub TG] getChat(-1001270092531): title="Proxy Stars | پروکسی" type=chatTypeSupergroup unread=558
+[telegram chats] getChat(-1003077577221): title="Cinefy Latest Releases" type=chatTypeSupergroup unread=54
+[SocialHub TG] getChat(-1003077577221): title="Cinefy Latest Releases" type=chatTypeSupergroup unread=54
+[telegram chats] getChat(-1001996621417): title="My Fault 2 • Your Fault • in Hindi" type=chatTypeSupergroup unread=1
+[SocialHub TG] getChat(-1001996621417): title="My Fault 2 • Your Fault • in Hindi" type=chatTypeSupergroup unread=1
+[telegram chats] getChat(-1001422855927): title="Anime Bite" type=chatTypeSupergroup unread=45052
+[SocialHub TG] getChat(-1001422855927): title="Anime Bite" type=chatTypeSupergroup unread=45052
+[telegram chats] getChat(-1001910148331): title="هارمه" type=chatTypeSupergroup unread=30
+[SocialHub TG] getChat(-1001910148331): title="هارمه" type=chatTypeSupergroup unread=30
+[telegram chats] getChat(777000): title="Telegram" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(777000): title="Telegram" type=chatTypePrivate unread=0
+[telegram chats] getChat(-1003728585841): title="Ruffg Movies" type=chatTypeSupergroup unread=686
+[SocialHub TG] getChat(-1003728585841): title="Ruffg Movies" type=chatTypeSupergroup unread=686
+[telegram chats] getChat(-1001918214386): title="Web Drama" type=chatTypeSupergroup unread=351
+[SocialHub TG] getChat(-1001918214386): title="Web Drama" type=chatTypeSupergroup unread=351
+[telegram chats] getChat(-1001209244960): title="Anime DataBase | Tokyo Revengers: War of the Three Titans Arc" type=chatTypeSupergroup unread=1373
+[SocialHub TG] getChat(-1001209244960): title="Anime DataBase | Tokyo Revengers: War of the Three Titans Arc" type=chatTypeSupergroup unread=1373
+[telegram chats] getChat(-1002142159234): title="Avici" type=chatTypeSupergroup unread=29160
+[SocialHub TG] getChat(-1002142159234): title="Avici" type=chatTypeSupergroup unread=29160
+[telegram chats] getChat(-1003643829801): title="LIONEL PCS" type=chatTypeSupergroup unread=1771
+[SocialHub TG] getChat(-1003643829801): title="LIONEL PCS" type=chatTypeSupergroup unread=1771
+[telegram messages] Fetching history for chat -1002925465769 (limit 50)...
+[SocialHub TG] Fetching history for chat -1002925465769 (limit 50)...
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram chats] getChat(7655028745) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(7655028745) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram chats] getChat(8477230378): title="Nazriya 4.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8477230378): title="Nazriya 4.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram messages] Fetching history for chat -1001566233688 (limit 50)...
+[SocialHub TG] Fetching history for chat -1001566233688 (limit 50)...
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram chats] getChat(477326488) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(477326488) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8376967651): title="Emma 5.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram messages] Fetching history for chat -1003291824306 (limit 50)...
+[SocialHub TG] Fetching history for chat -1003291824306 (limit 50)...
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8386346596) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8386346596) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8573456195) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8573456195) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8978643654) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[telegram chats] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(8653446458) failed: TDLib error: Chat not found (code 400)
+[telegram messages] Fetching history for chat -1003177449261 (limit 50)...
+[SocialHub TG] Fetching history for chat -1003177449261 (limit 50)...
+[telegram chats] getChat(8477230378): title="Nazriya 4.0 ♡ミ" type=chatTypePrivate unread=0
+[SocialHub TG] getChat(8477230378): title="Nazriya 4.0 ♡ミ" type=chatTypePrivate unread=0
+[telegram messages] Fetching history for chat -1001387000365 (limit 50)...
+[SocialHub TG] Fetching history for chat -1001387000365 (limit 50)...
+[telegram chats] getChat(6331591179) failed: TDLib error: Chat not found (code 400)
+[SocialHub TG] getChat(6331591179) failed: TDLib error: Chat not found (code 400)

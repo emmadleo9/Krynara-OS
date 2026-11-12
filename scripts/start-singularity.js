@@ -303,12 +303,13 @@ async function main() {
   let gateway;
   if (!(await getHealth(gatewayHealthUrl, '/api/whatsapp/status'))) {
     // If the port is already taken by something else, don't crash with EADDRINUSE.
-    const portTaken = await new Promise<boolean>((resolve) => {
-      const probe = net.createServer()
-        .once('error', () => resolve(true))
-        .once('listening', () => { probe.close(); resolve(false); })
-        .listen(gatewayPort, '127.0.0.1');
-    });
+    let portTaken = false;
+    try {
+      const res = await fetch(gatewayHealthUrl, { signal: AbortSignal.timeout(1000) });
+      portTaken = true; // something responded on the port
+    } catch {
+      portTaken = false; // connection refused → port is free
+    }
     if (portTaken) {
       if (await getHealth(gatewayHealthUrl)) {
         throw new Error(`Port ${gatewayPort} is serving a different gateway. Stop it and restart KRYNARA so WhatsApp can use the local API.`);
