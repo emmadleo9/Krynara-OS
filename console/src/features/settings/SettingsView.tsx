@@ -15,6 +15,23 @@ import { DebugPanel } from './DebugPanel';
 
 type KeyEntry = { id: string; label: string; url: string; scope: string; connected: boolean; masked: string };
 
+type RealStorageStats = {
+  osFolder: { path: string; bytes: number; gb: string };
+  dataFolder: { path: string; bytes: number; gb: string };
+  krynaraTotal: { bytes: number; gb: string };
+  drive: {
+    mount: string;
+    totalBytes: number;
+    usedBytes: number;
+    freeBytes: number;
+    totalGb: string;
+    usedGb: string;
+    freeGb: string;
+    usedPercent: number;
+  };
+  measuredAt: string;
+};
+
 export function SettingsView() {
   const [keys, setKeys] = useState<KeyEntry[]>([]);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
@@ -23,7 +40,29 @@ export function SettingsView() {
   const [storageStatus, setStorageStatus] = useState(() => getKrynaraStorageStatus());
   const [quotaText, setQuotaText] = useState('Checking storage usage…');
   const [storageBusy, setStorageBusy] = useState(false);
+  const [realStorage, setRealStorage] = useState<RealStorageStats | null>(null);
+  const [idbUsage, setIdbUsage] = useState<{ usedMb: string; quotaGb: string } | null>(null);
   const importInput = useRef<HTMLInputElement>(null);
+
+  const loadRealStorage = useCallback(async () => {
+    try {
+      const res = await fetch('/api/storage/real-stats');
+      if (res.ok) {
+        const data = await res.json() as RealStorageStats;
+        setRealStorage(data);
+      }
+    } catch {
+      // ignore
+    }
+    if (typeof navigator !== 'undefined' && navigator.storage?.estimate) {
+      try {
+        const est = await navigator.storage.estimate();
+        const usedMb = ((est.usage || 0) / (1024 * 1024)).toFixed(1);
+        const quotaGb = ((est.quota || 0) / (1024 ** 3)).toFixed(1);
+        setIdbUsage({ usedMb, quotaGb });
+      } catch {}
+    }
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -35,7 +74,7 @@ export function SettingsView() {
     }
   }, []);
 
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); void loadRealStorage(); }, [load, loadRealStorage]);
   useEffect(() => {
     void initKrynaraStorage()
       .then((status) => {
@@ -191,23 +230,40 @@ export function SettingsView() {
         </div>
       </HudFrame>
 
-      <HudFrame title="20 GB ALLOCATED - FOR COMPLETE Krynara-OS SYSTEM (NOT ONLY AI)">
+      <HudFrame title="KRYNARA STORAGE // LITERAL DISK & SYSTEM USAGE">
         <p className="credential-notice">
-          20 GB Allocated - For Complete Krynara-OS System (Not only AI). Chats, logs, and memory use quota-checked IndexedDB and are mirrored to the selected folder when browser folder access is available. Choose the folder named <strong>Krynara-OS-DATA</strong> on D:. The browser cannot confirm a drive letter or expose the full path.
+          Real filesystem metrics computed directly from disk. Shows literal size of both Krynara folders and total capacity of Drive {realStorage?.drive?.mount || 'D:'}.
         </p>
         <div className="storage-status-grid">
           <div className="settings-key-head">
-            <span className={`status-dot${storageStatus.directorySelected ? '' : ' status-dot-offline'}`} />
-            <strong>{storageStatus.directoryStatus}</strong>
+            <span className="status-dot" />
+            <strong>DISK {realStorage?.drive?.mount || 'D:'}: {realStorage?.drive?.usedGb || '--'} GB USED OF {realStorage?.drive?.totalGb || '--'} GB ({realStorage?.drive?.usedPercent ?? 0}%)</strong>
           </div>
-          <div id="quota-bar" className="quota-bar" role="progressbar" aria-label="20 GB Allocated - For Complete Krynara-OS System (Not only AI)" aria-valuemin={0} aria-valuemax={100}>{quotaText}</div>
-          <small className="settings-key-scope">
-            {storageStatus.persistentStorageGranted ? 'Browser durable storage granted' : 'Browser durable storage not granted'}
-          </small>
-          {storageStatus.warnings.map((warning) => <p className="inline-status" role="status" key={warning}>{warning}</p>)}
-          <div className="storage-actions">
+          <div id="quota-bar" className="quota-bar" role="progressbar" aria-valuenow={realStorage?.drive?.usedPercent ?? 0} aria-valuemin={0} aria-valuemax={100}>
+            {realStorage ? `Drive ${realStorage.drive.mount} Free: ${realStorage.drive.freeGb} GB | Krynara Total: ${realStorage.krynaraTotal.gb} GB` : quotaText}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', marginTop: '12px' }}>
+            <div style={{ padding: '10px', border: '1px solid rgba(138,248,255,0.2)', background: 'rgba(5,10,14,0.6)' }}>
+              <div style={{ color: 'var(--krynara-cyan)', fontSize: '11px', fontWeight: 'bold' }}>OS FOLDER</div>
+              <div style={{ fontSize: '14px', marginTop: '4px' }}>{realStorage?.osFolder.gb || '--'} GB</div>
+              <small style={{ color: 'var(--krynara-muted)', fontSize: '9px' }}>{realStorage?.osFolder.path || 'D:\\Krynara-OS'}</small>
+            </div>
+            <div style={{ padding: '10px', border: '1px solid rgba(138,248,255,0.2)', background: 'rgba(5,10,14,0.6)' }}>
+              <div style={{ color: 'var(--krynara-cyan)', fontSize: '11px', fontWeight: 'bold' }}>DATA STORAGE FOLDER</div>
+              <div style={{ fontSize: '14px', marginTop: '4px' }}>{realStorage?.dataFolder.gb || '--'} GB</div>
+              <small style={{ color: 'var(--krynara-muted)', fontSize: '9px' }}>{realStorage?.dataFolder.path || 'D:\\Krynara-OS-STORAGE'}</small>
+            </div>
+            <div style={{ padding: '10px', border: '1px solid rgba(138,248,255,0.2)', background: 'rgba(5,10,14,0.6)' }}>
+              <div style={{ color: 'var(--krynara-cyan)', fontSize: '11px', fontWeight: 'bold' }}>INDEXEDDB STORAGE</div>
+              <div style={{ fontSize: '14px', marginTop: '4px' }}>{idbUsage ? `${idbUsage.usedMb} MB` : 'Estimating…'}</div>
+              <small style={{ color: 'var(--krynara-muted)', fontSize: '9px' }}>Quota: {idbUsage?.quotaGb || '--'} GB</small>
+            </div>
+          </div>
+
+          <div className="storage-actions" style={{ marginTop: '14px' }}>
             <button type="button" className="hud-button" disabled={storageBusy} onClick={() => void selectDataFolder()}>
-              SELECT D DRIVE FOLDER (20 GB FOR COMPLETE Krynara-OS SYSTEM)
+              SYNC / SELECT DATA FOLDER
             </button>
             <button type="button" className="hud-button" disabled={storageBusy} onClick={() => void exportMemory()}>
               EXPORT ALL MEMORY JSON
