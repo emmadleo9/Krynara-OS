@@ -34,6 +34,8 @@ const gatewayHealthUrl = `http://127.0.0.1:${gatewayPort}/api/health`;
 const consoleHealthUrl = `http://127.0.0.1:${consolePort}/api/health`;
 const ollamaBaseUrl = process.env.KRYNARA_OLLAMA_URL || 'http://127.0.0.1:11434';
 const ollamaHealthUrl = new URL('/api/tags', ollamaBaseUrl).toString();
+const twebDir = 'D:\\Refrences and Codes\\tweb';
+const twebBridgeHealthUrl = 'http://127.0.0.1:2787/api/state';
 const children = new Set();
 let stopping = false;
 let coordinatorLock;
@@ -300,8 +302,18 @@ async function main() {
 
   let gateway;
   if (!(await getHealth(gatewayHealthUrl, '/api/whatsapp/status'))) {
-    if (await getHealth(gatewayHealthUrl)) {
-      throw new Error(`Port ${gatewayPort} is serving a different gateway. Stop it and restart KRYNARA so WhatsApp can use the local API.`);
+    // If the port is already taken by something else, don't crash with EADDRINUSE.
+    const portTaken = await new Promise<boolean>((resolve) => {
+      const probe = net.createServer()
+        .once('error', () => resolve(true))
+        .once('listening', () => { probe.close(); resolve(false); })
+        .listen(gatewayPort, '127.0.0.1');
+    });
+    if (portTaken) {
+      if (await getHealth(gatewayHealthUrl)) {
+        throw new Error(`Port ${gatewayPort} is serving a different gateway. Stop it and restart KRYNARA so WhatsApp can use the local API.`);
+      }
+      throw new Error(`Port ${gatewayPort} is already in use by another process. Stop it (STOP-KRYNARA.bat) and restart Krynara-OS.`);
     }
     gateway = startChild(
       'Gateway',
@@ -311,6 +323,26 @@ async function main() {
       { ...process.env, GATEWAY_PORT: String(gatewayPort), KRYNARA_PORT: String(gatewayPort), PORT: String(gatewayPort) },
     );
     await waitForHealth(gatewayHealthUrl, 'KRYNARA local gateway', gateway, '/api/whatsapp/status');
+  }
+
+  // Start the Telegram bridge (port 2787) as soon as the gateway is up so TDLib is
+  // ready when the user clicks CONNECT TELEGRAM — no more "bridge offline" delay.
+  // Only start the bridge if the gateway is actually healthy (ours or an existing one).
+  let twebBridge;
+  if (await getHealth(gatewayHealthUrl, '/api/whatsapp/status') && !(await getHealth(twebBridgeHealthUrl))) {
+    if (fs.existsSync(path.join(twebDir, 'socialhub-server.js'))) {
+      twebBridge = startChild(
+        'TelegramBridge',
+        process.execPath,
+        ['socialhub-server.js'],
+        twebDir,
+        { ...process.env, PORT: '2787' },
+      );
+      await waitForEndpoint(twebBridgeHealthUrl, 'Telegram bridge', twebBridge, 60_000);
+      console.log('[Krynara-OS] Telegram bridge is ready on http://127.0.0.1:2787.');
+    } else {
+      console.warn(`[Krynara-OS] Telegram bridge script not found at ${twebDir}; Telegram will be unavailable.`);
+    }
   }
 
   if (!(await getHealth(consoleHealthUrl))) {

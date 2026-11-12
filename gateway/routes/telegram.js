@@ -12,6 +12,9 @@ const TWEB_DIR = 'D:\\Refrences and Codes\\tweb';
 // per gateway boot if it is down, then retry the forwarded request.
 let bridgeSpawning = false;
 let bridgeSpawned = false;
+
+// Start the Telegram bridge immediately at gateway boot so it is ready when
+// the console connects — no more "bridge offline" on first use.
 function ensureBridge() {
   if (bridgeSpawned || bridgeSpawning) return;
   bridgeSpawning = true;
@@ -19,6 +22,7 @@ function ensureBridge() {
     const fs = require('node:fs');
     if (!fs.existsSync(require('node:path').join(TWEB_DIR, 'socialhub-server.js'))) {
       console.warn('[telegram] bridge script not found at', TWEB_DIR);
+      bridgeSpawning = false;
       return;
     }
     const child = require('node:child_process').spawn(process.execPath, ['socialhub-server.js'], {
@@ -42,10 +46,13 @@ function ensureBridge() {
   }
 }
 
+// Kick off the bridge as soon as this module loads (gateway boot).
+ensureBridge();
+
 async function bridgeUp() {
   try {
     const c = new AbortController();
-    const t = setTimeout(() => controllerAbort(c), 1500);
+    const t = setTimeout(() => controllerAbort(c), 2000);
     const res = await fetch(TWEB_BRIDGE + '/api/state', { signal: c.signal });
     clearTimeout(t);
     return res.ok;
