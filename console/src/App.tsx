@@ -63,7 +63,13 @@ function ScopesView() { return <><div className="krynara-grid krynara-grid-4"><R
 function TimeView() { const zones = ['UTC', 'KARACHI', 'NEW YORK', 'LONDON', 'TOKYO', 'DUBAI']; return <div className="krynara-grid krynara-grid-3">{zones.map((zone) => <HudFrame title={zone} key={zone}><div className="clock-face">{new Date().toISOString().slice(11, 19)}<small>WORLD TIME INTEL</small></div></HudFrame>)}</div>; }
 function NotFound() { return <HudFrame title="ROUTE ERROR"><div className="hud-value" style={{ fontSize: 30 }}>INVALID URL</div><p style={{ color: 'var(--krynara-muted)' }}>The requested route is outside the KRYNARA console manifest.</p><NavLink to="/" style={{ color: 'var(--krynara-cyan)' }}>RETURN TO DASHBOARD →</NavLink></HudFrame>; }
 
-export default function App() { return <BrowserRouter><Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/world" element={<WorldView />} /><Route path="/news" element={<NewsView />} /><Route path="/weather" element={<WeatherView />} /><Route path="/feeds" element={<FeedsView />} /><Route path="/scopes" element={<ScopesView />} /><Route path="/time" element={<TimeView />} /><Route path="/social" element={<SocialHub />} /><Route path="/devices" element={<DevicesView />} /><Route path="/diagnostics" element={<DiagnosticsView />} /><Route path="*" element={<NotFound />} /></Routes></Shell></BrowserRouter>; }
+export default function App() {
+  // Auto‑connect Telegram bridge on first load if credentials are present
+  useEffect(() => {
+    fetch('/api/connect', { method: 'POST' }).catch(() => {});
+  }, []);
+
+  return <BrowserRouter><Shell><Routes><Route path="/" element={<Dashboard />} /><Route path="/world" element={<WorldView />} /><Route path="/news" element={<NewsView />} /><Route path="/weather" element={<WeatherView />} /><Route path="/feeds" element={<FeedsView />} /><Route path="/scopes" element={<ScopesView />} /><Route path="/time" element={<TimeView />} /><Route path="/social" element={<SocialHub />} /><Route path="/devices" element={<DevicesView />} /><Route path="/diagnostics" element={<DiagnosticsView />} /><Route path="*" element={<NotFound />} /></Routes></Shell></BrowserRouter>; }
 
 
 
