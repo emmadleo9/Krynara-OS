@@ -1,109 +1,111 @@
 /**
  * KRYNARA gateway <-> Social Hub Telegram bridge.
  * Forwards /api/telegram/* to the real TDLib bridge (node socialhub-server.js
- * in D:\Refrences and Codes\tweb, port 2787). Connected means ONLY that TDLib
- * reports authorizationStateReady — never just "keys typed".
+ * in D:\Refrences and Codes\tweb, port 2787).
  */
+const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawn } = require('node:child_process');
+
 const TWEB_BRIDGE = 'http://127.0.0.1:2787';
 const TWEB_DIR = 'D:\\Refrences and Codes\\tweb';
 
-// BUG 3 FIX: the bridge (node socialhub-server.js, port 2787) previously had
-// to be started by hand — every poll produced a hard 502. Auto-start it once
-// per gateway boot if it is down, then retry the forwarded request.
 let bridgeSpawning = false;
 let bridgeSpawned = false;
 
-// Start the Telegram bridge immediately at gateway boot so it is ready when
-// the console connects — no more "bridge offline" on first use.
 function ensureBridge() {
   if (bridgeSpawned || bridgeSpawning) return;
   bridgeSpawning = true;
   try {
-    const fs = require('node:fs');
-    if (!fs.existsSync(require('node:path').join(TWEB_DIR, 'socialhub-server.js'))) {
+    const scriptPath = path.join(TWEB_DIR, 'socialhub-server.js');
+    if (!fs.existsSync(scriptPath)) {
       console.warn('[telegram] bridge script not found at', TWEB_DIR);
       bridgeSpawning = false;
       return;
     }
-    const child = require('node:child_process').spawn(process.execPath, ['socialhub-server.js'], {
+    const child = spawn(process.execPath, ['socialhub-server.js'], {
       cwd: TWEB_DIR,
       windowsHide: true,
       detached: false,
       stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, PORT: '2787' },
     });
+
     child.stdout.on('data', (d) => process.stdout.write(`[tweb] ${d}`));
     child.stderr.on('data', (d) => process.stderr.write(`[tweb] ${d}`));
     child.on('exit', (code) => {
-      console.warn(`[telegram] bridge exited (${code}); will not auto-restart until gateway restart.`);
+      console.warn(`[telegram] bridge exited (${code}); ready to respawn if requested.`);
       bridgeSpawned = false;
     });
+
     bridgeSpawned = true;
     console.log('[telegram] TDLib bridge auto-started on port 2787.');
   } catch (err) {
     console.warn('[telegram] bridge auto-start failed:', err && err.message ? err.message : err);
   } finally {
-    setTimeout(() => { bridgeSpawning = false; }, 5000);
+    setTimeout(() => { bridgeSpawning = false; }, 3000);
   }
 }
 
-// Kick off the bridge as soon as this module loads (gateway boot).
+// Auto-start the bridge at gateway boot
 ensureBridge();
 
 async function bridgeUp() {
   try {
-    const c = new AbortController();
-    const t = setTimeout(() => controllerAbort(c), 2000);
-    const res = await fetch(TWEB_BRIDGE + '/api/state', { signal: c.signal });
-    clearTimeout(t);
+    const res = await fetch(TWEB_BRIDGE + '/api/state', { signal: AbortSignal.timeout(1500) });
     return res.ok;
-  } catch { return false; }
+  } catch {
+    return false;
+  }
 }
-function controllerAbort(controller) { try { controller.abort(); } catch { /* noop */ } }
 
-async function forward(path, init) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10000);
+async function forward(subPath, init) {
   try {
-    const res = await fetch(TWEB_BRIDGE + path, { ...init, signal: controller.signal });
+    const res = await fetch(TWEB_BRIDGE + subPath, {
+      ...init,
+      signal: AbortSignal.timeout(15000),
+    });
     const body = await res.json().catch(() => ({}));
     return { status: res.status, body };
   } catch (err) {
-    // BUG 3 FIX: first failure auto-starts the bridge and retries once before
-    // surfacing the real error (still 502, but only when truly offline).
     if (!bridgeSpawned) {
       ensureBridge();
-      for (let i = 0; i < 20 && !(await bridgeUp()); i++) {
-        await new Promise((r) => setTimeout(r, 1000));
+      for (let i = 0; i < 6 && !(await bridgeUp()); i++) {
+        await new Promise((r) => setTimeout(r, 500));
       }
-      if (await bridgeUp()) return forward(path, init);
+      if (await bridgeUp()) return forward(subPath, init);
     }
     return {
       status: 502,
       body: {
-        error: 'Telegram bridge offline — starting it now, retry in ~10 seconds.',
+        error: 'Telegram bridge offline — starting it now, retry in a moment.',
         detail: String(err && err.message ? err.message : err),
       },
     };
-  } finally {
-    clearTimeout(timer);
   }
 }
 
 module.exports = {
   register(app) {
-    // Single source of truth for "is Telegram really connected":
+    // Single source of truth for Telegram status
     app.get('/api/telegram/status', async (_req, res) => {
       const { status, body } = await forward('/api/state');
       res.status(status).json({
         configured: body.configured ?? false,
         authorized: body.authorized ?? false,
-        connected: body.authorized ?? false, // explicit: Connected ONLY on TDLib Ready
+        connected: body.authorized ?? false,
         state: body.state ?? 'idle',
         user: body.user ?? null,
-        proxy: body.proxy ?? { type: 'none' },
-        chats_count: Array.isArray(body.chats) ? body.chats.length : 0,
+        proxy: body.proxy ?? { enabled: false, type: 'none' },
+        chats_count: body.chats_count ?? 0,
         bridgeOnline: status === 200,
       });
+    });
+
+    app.post('/api/telegram/connect', async (_req, res) => {
+      const r = await forward('/api/connect', { method: 'POST' });
+      res.status(r.status).json(r.body);
     });
 
     app.post('/api/telegram/send-code', async (req, res) => {
@@ -152,55 +154,160 @@ module.exports = {
       const r = await forward('/api/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chatId: req.body?.chatId, text: req.body?.text }),
+        body: JSON.stringify({ chatId: req.body?.chatId, text: req.body?.text, replyToId: req.body?.replyToId }),
       });
       res.status(r.status).json(r.body);
     });
 
-    // SETTINGS BUG FIX: the tweb bridge never implemented /api/telegram/proxy,
-    // so every save failed and Settings reset to None on refresh. The bridge
-    // DOES load config/telegram-proxy.json at boot (src/telegram/config.js), so
-    // persist the proxy to that exact file here and serve it back on GET.
-    const TWEB_PROXY_FILE = require('node:path').join(TWEB_DIR, 'config', 'telegram-proxy.json');
-    const PROXY_DEFAULTS = { type: 'none', host: '', port: '', username: '', password: '', secret: '' };
-    const readProxyFile = () => {
-      try {
-        if (require('node:fs').existsSync(TWEB_PROXY_FILE)) {
-          const data = JSON.parse(require('node:fs').readFileSync(TWEB_PROXY_FILE, 'utf8'));
-          return { ...PROXY_DEFAULTS, ...data };
-        }
-      } catch { /* fall through to defaults */ }
-      return { ...PROXY_DEFAULTS };
-    };
-
-    app.post('/api/telegram/proxy', async (req, res) => {
-      const body = req.body ?? {};
-      const type = ['none', 'socks5', 'mtproto'].includes(body.type) ? body.type : 'none';
-      const proxy = {
-        type,
-        host: String(body.host || ''),
-        port: String(body.port || ''),
-        username: String(body.username || ''),
-        password: String(body.password || ''),
-        secret: String(body.secret || ''),
-      };
-      if (type !== 'none' && (!proxy.host || !proxy.port)) {
-        return res.status(400).json({ error: 'host and port are required for a proxy.' });
-      }
-      if (type === 'mtproto' && !proxy.secret) {
-        return res.status(400).json({ error: 'MTProto proxies need a secret.' });
-      }
-      try {
-        require('node:fs').mkdirSync(require('node:path').dirname(TWEB_PROXY_FILE), { recursive: true });
-        require('node:fs').writeFileSync(TWEB_PROXY_FILE, JSON.stringify(proxy, null, 2));
-      } catch (error) {
-        return res.status(500).json({ error: `Could not write proxy config: ${error instanceof Error ? error.message : String(error)}` });
-      }
-      res.json({ saved: true, proxy, note: 'Saved to config/telegram-proxy.json. Restart the Telegram bridge so TDLib reloads the route.' });
+    // Message Actions
+    app.post('/api/telegram/reply', async (req, res) => {
+      const r = await forward('/api/telegram/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
     });
 
-    app.get('/api/telegram/proxy', (_req, res) => {
-      res.json(readProxyFile());
+    app.post('/api/telegram/edit', async (req, res) => {
+      const r = await forward('/api/telegram/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/delete', async (req, res) => {
+      const r = await forward('/api/telegram/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/pin', async (req, res) => {
+      const r = await forward('/api/telegram/pin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/forward', async (req, res) => {
+      const r = await forward('/api/telegram/forward', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/react', async (req, res) => {
+      const r = await forward('/api/telegram/react', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/callback-query', async (req, res) => {
+      const r = await forward('/api/telegram/callback-query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    // File Downloads & Media Streaming
+    app.post('/api/telegram/download', async (req, res) => {
+      const r = await forward('/api/telegram/download', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.get('/api/telegram/file-status/:id', async (req, res) => {
+      const r = await forward(`/api/telegram/file-status/${encodeURIComponent(req.params.id)}`);
+      res.status(r.status).json(r.body);
+    });
+
+    app.get('/api/telegram/file/:id', (req, res) => {
+      const fileUrl = `${TWEB_BRIDGE}/api/telegram/file/${encodeURIComponent(req.params.id)}`;
+      const request = http.get(fileUrl, (bridgeRes) => {
+        res.writeHead(bridgeRes.statusCode || 200, bridgeRes.headers);
+        bridgeRes.pipe(res);
+      });
+      request.on('error', () => {
+        res.status(502).json({ error: 'Failed to retrieve media file from bridge' });
+      });
+    });
+
+    app.post('/api/telegram/open-file', async (req, res) => {
+      const r = await forward('/api/telegram/open-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    // Groups & Channels
+    app.post('/api/telegram/create-group', async (req, res) => {
+      const r = await forward('/api/telegram/create-group', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/create-channel', async (req, res) => {
+      const r = await forward('/api/telegram/create-channel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    // Proxy Module
+    app.get('/api/telegram/proxy', async (_req, res) => {
+      const r = await forward('/api/telegram/proxy');
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/proxy', async (req, res) => {
+      const r = await forward('/api/telegram/proxy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/proxy/toggle', async (req, res) => {
+      const r = await forward('/api/telegram/proxy/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
+    });
+
+    app.post('/api/telegram/proxy/auto', async (req, res) => {
+      const r = await forward('/api/telegram/proxy/auto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(req.body ?? {}),
+      });
+      res.status(r.status).json(r.body);
     });
 
     app.post('/api/telegram/test-proxy', async (req, res) => {
@@ -212,9 +319,26 @@ module.exports = {
       res.status(r.status).json(r.body);
     });
 
-    app.post('/api/telegram/connect', async (_req, res) => {
-      const r = await forward('/api/connect', { method: 'POST' });
-      res.status(r.status).json(r.body);
+    // Real-Time SSE Event Stream Proxy
+    app.get('/api/telegram/events', (req, res) => {
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache, no-transform');
+      res.setHeader('Connection', 'keep-alive');
+      res.flushHeaders?.();
+
+      const bridgeReq = http.get(`${TWEB_BRIDGE}/api/events`, (bridgeRes) => {
+        bridgeRes.on('data', (chunk) => res.write(chunk));
+        bridgeRes.on('end', () => res.end());
+      });
+
+      bridgeReq.on('error', () => {
+        res.write('data: {"kind":"error","message":"Bridge stream disconnected"}\n\n');
+        setTimeout(() => res.end(), 1000);
+      });
+
+      req.on('close', () => {
+        bridgeReq.destroy();
+      });
     });
   },
 };
