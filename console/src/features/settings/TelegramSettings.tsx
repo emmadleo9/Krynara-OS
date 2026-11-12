@@ -162,7 +162,7 @@ export function TelegramSettings() {
     connectTimeoutRef.current = setTimeout(() => {
       clearInterval(interval);
       setMessage('Connection timed out — trying next proxy…');
-      await tryProxyList();
+      void tryProxyList();
     }, 10000);
 
     try {
@@ -193,8 +193,8 @@ export function TelegramSettings() {
       if (res.ok) {
         const data = await res.json() as { proxies?: Array<{ host: string; port: number; type: string }> };
         for (const p of (data.proxies ?? [])) {
-          const dup = list.find((x) => x.host === p.host && x.port === p.port && x.type === p.type);
-          if (!dup) list.push({ ...p, type: p.type, label: `${p.type.toUpperCase()} ${p.host}:${p.port}` });
+        const dup = list.find((x) => x.host === p.host && String(x.port) === String(p.port) && x.type === p.type);
+        if (!dup) list.push({ type: p.type, host: p.host, port: String(p.port), username: '', password: '', secret: '', label: `${p.type.toUpperCase()} ${p.host}:${p.port}` });
         }
       }
     } catch { /* ignore */ }
