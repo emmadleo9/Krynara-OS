@@ -37,6 +37,7 @@ const localAiRoute = require('./routes/local-ai');
 const onlineAiRoute = require('./routes/online-ai');
 const telegramRoute = require('./routes/telegram');
 const storageStatsRoute = require('./routes/storage-stats');
+const botCallbackRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/bot-callback');
 
 const app = express();
 const server = createServer(app);
