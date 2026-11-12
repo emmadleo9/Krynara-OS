@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HudFrame } from '@/components/hud';
+import { Sidebar } from '@/components/telegram/Sidebar';
+import { ChatList } from '@/components/telegram/ChatList';
 import './telegram-clone.css';
 
 export type TgUser = {
@@ -119,8 +121,8 @@ export function TelegramLive() {
   const [draft, setDraft] = useState('');
   const [replyTarget, setReplyTarget] = useState<TgMessage | null>(null);
   const [editingMessage, setEditingMessage] = useState<TgMessage | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFolder, setActiveFolder] = useState<'all' | 'personal' | 'groups' | 'channels' | 'bots' | 'unread'>('all');
+  const [searchQuery] = useState('');
+  const [activeFolder] = useState<'all' | 'personal' | 'groups' | 'channels' | 'bots' | 'unread'>('all');
   const [downloadProgress, setDownloadProgress] = useState<Record<number, number>>({});
   const [feedbackToast, setFeedbackToast] = useState('');
 
@@ -135,7 +137,7 @@ export function TelegramLive() {
   const [playingAudioId, setPlayingAudioId] = useState<string | null>(null);
 
   // Loading States
-  const [chatsLoading, setChatsLoading] = useState(false);
+  const [, setChatsLoading] = useState(false);
   const [messagesLoading, setMessagesLoading] = useState(false);
   const [sending, setSending] = useState(false);
 
@@ -615,9 +617,9 @@ export function TelegramLive() {
       <div className="tg-layout">
         {/* LEFT COLUMN */}
         {/* LEFT COLUMN */}
-        <Sidebar onSelectChat={(id) => { setActiveId(id); setMessages([]); }} />
+        <Sidebar onSelectChat={(id: string) => { setActiveId(id); setMessages([]); }} />
         {/* CHAT LIST */}
-        <ChatList chats={filteredChats} activeChatId={activeId} onSelect={(id) => { setActiveId(id); setMessages([]); }} />
+        <ChatList chats={filteredChats} activeChatId={activeId} onSelect={(id: string) => { setActiveId(id); setMessages([]); }} />
 
         {/* RIGHT COLUMN: CHAT VIEW */}
         <div className="tg-chat-view">

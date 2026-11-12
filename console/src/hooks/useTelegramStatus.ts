@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { TgStatus } from '@/features/social/TelegramLive';
+import type { TgStatus } from '@/features/social/TelegramLive';
 
 /**
  * Shared hook that fetches Telegram bridge status and keeps it up‑to‑date.
