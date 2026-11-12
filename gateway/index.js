@@ -121,6 +121,7 @@ novaRoute.register(app);
 whatsapp.registerKrynaraWhatsApp(app);
 telegramRoute.register(app);
 storageStatsRoute.register(app);
+  telegramFoldersRoute.register(app);
 botCallbackRoute.register(app);
 
 app.get('/api/weather', async (req, res) => {
