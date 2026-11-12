@@ -122,6 +122,24 @@ whatsapp.registerKrynaraWhatsApp(app);
 telegramRoute.register(app);
 storageStatsRoute.register(app);
   telegramFoldersRoute.register(app);
+  // Register additional Telegram feature routes
+  const telegramCreateGroupRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramCreateGroup');
+  const telegramCallsRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramCalls');
+  const telegramContactsRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramContacts');
+  const telegramPremiumRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramPremium');
+  const telegramStoriesRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramStories');
+  const telegramStatusRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramStatus');
+  const telegramArchiveRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramArchive');
+  const telegramSpamRoute = require('../brain/995ff755-63ba-4e2a-afae-e4e42de26628/gateway/routes/telegramSpam');
+  app.use('/api/telegram', telegramCreateGroupRoute);
+  app.use('/api/telegram', telegramCallsRoute);
+  app.use('/api/telegram', telegramContactsRoute);
+  app.use('/api/telegram', telegramPremiumRoute);
+  app.use('/api/telegram', telegramStoriesRoute);
+  app.use('/api/telegram', telegramStatusRoute);
+  app.use('/api/telegram', telegramArchiveRoute);
+  app.use('/api/telegram', telegramSpamRoute);
+
 botCallbackRoute.register(app);
 
 app.get('/api/weather', async (req, res) => {
