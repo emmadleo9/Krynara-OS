@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { TgChat } from '@/features/social/TelegramLive';
+import type { TgChat } from '@/features/social/TelegramLive';
 import './telegram-clone.css';
 
 export const ChatList = ({

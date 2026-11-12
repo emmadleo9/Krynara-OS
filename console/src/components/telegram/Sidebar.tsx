@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { useTelegramStatus } from '@/hooks/useTelegramStatus';
 import './telegram-clone.css';
 
-export const Sidebar = ({ onSelectChat }: { onSelectChat: (chatId: string) => void }) => {
+export const Sidebar = ({ onSelectChat: _onSelectChat }: { onSelectChat: (chatId: string) => void }) => {
   const [search, setSearch] = useState('');
-  const status = useTelegramStatus();
+  const { status: tgStatus } = useTelegramStatus();
   const folders = ['All Chats', 'Personal', 'Groups', 'Channels', 'Bots']; // placeholder
-  const handleFolderClick = (folder: string) => {
+  const handleFolderClick = (_folder: string) => {
     // TODO: filter chats by folder – for now no-op
   };
 
@@ -16,8 +16,8 @@ export const Sidebar = ({ onSelectChat }: { onSelectChat: (chatId: string) => vo
         <div className="tg-brand-badge">
           <span>Telegram</span>
         </div>
-        <div className="tg-proxy-pill {status?.proxy?.enabled ? 'active' : ''}" onClick={() => {}}> {/* placeholder */}
-          {status?.proxy?.enabled ? 'Proxy ON' : 'Proxy OFF'}
+        <div className={`tg-proxy-pill ${tgStatus?.proxy?.enabled ? 'active' : ''}`} onClick={() => {}}> {/* placeholder */}
+          {tgStatus?.proxy?.enabled ? 'Proxy ON' : 'Proxy OFF'}
         </div>
       </div>
       <div className="tg-search-wrapper">
@@ -32,7 +32,7 @@ export const Sidebar = ({ onSelectChat }: { onSelectChat: (chatId: string) => vo
       </div>
       <div className="tg-stories-bar">
         {/* stories placeholder – could map over status.user?.is_premium */}
-        {status?.user?.is_premium && (
+        {tgStatus?.user?.is_premium && (
           <div className="tg-story-item">
             <div className="tg-story-ring">
               <div className="tg-story-avatar">⭐</div>

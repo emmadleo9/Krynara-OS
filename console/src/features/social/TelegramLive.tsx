@@ -620,7 +620,7 @@ export function TelegramLive() {
         <Sidebar onSelectChat={(id: string) => { setActiveId(id); setMessages([]); }} />
         {/* CHAT LIST */}
         <ChatList chats={filteredChats} activeChatId={activeId} onSelect={(id: string) => { setActiveId(id); setMessages([]); }} />
-
+do al 
         {/* RIGHT COLUMN: CHAT VIEW */}
         <div className="tg-chat-view">
           {/* Chat Header */}
