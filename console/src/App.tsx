@@ -15,6 +15,17 @@ function Sidebar() {
     ['/', '◈', 'DASHBOARD'], ['/world', '◎', 'WORLD VIEW'], ['/weather', '☼', 'WEATHER INTEL'], ['/feeds', '▤', 'NEWS & CONFLICT'],
     ['/social', '◌', 'SOCIAL HUB'], ['/scopes', '⌁', 'SCOPES & RADARS'], ['/devices', '▣', 'MY DEVICES'], ['/time', '◷', 'WORLD CLOCK'], ['/diagnostics', '⌘', 'DIAGNOSTICS'],
   ];
+  return <aside className="krynara-sidebar">
+    <div className="krynara-brand">KRYNARA<small>PUBLIC DATA CONSOLE // 04.0.1.16</small></div>
+    <nav className="krynara-nav">{links.map(([to, icon, label]) => <NavLink key={to} to={to} end={to === '/'}><span className="krynara-nav-icon">{icon}</span><span>{label}</span></NavLink>)}</nav>
+    <div style={{ position: 'absolute', bottom: 22, left: 18, right: 18 }}>
+      <DashboardStatus />
+    </div>
+  </aside>;
+  const links = [
+    ['/', '◈', 'DASHBOARD'], ['/world', '◎', 'WORLD VIEW'], ['/weather', '☼', 'WEATHER INTEL'], ['/feeds', '▤', 'NEWS & CONFLICT'],
+    ['/social', '◌', 'SOCIAL HUB'], ['/scopes', '⌁', 'SCOPES & RADARS'], ['/devices', '▣', 'MY DEVICES'], ['/time', '◷', 'WORLD CLOCK'], ['/diagnostics', '⌘', 'DIAGNOSTICS'],
+  ];
   return <aside className="krynara-sidebar"><div className="krynara-brand">KRYNARA<small>PUBLIC DATA CONSOLE // 04.0.1.16</small></div><nav className="krynara-nav">{links.map(([to, icon, label]) => <NavLink key={to} to={to} end={to === '/'}><span className="krynara-nav-icon">{icon}</span><span>{label}</span></NavLink>)}</nav><div style={{ position: 'absolute', bottom: 22, left: 18, right: 18 }}><div className="hud-label">SYSTEM STATE</div><div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--krynara-green)', marginTop: 8, fontSize: 11 }}><span className="status-dot" /> NOMINAL</div></div></aside>;
 }
 
