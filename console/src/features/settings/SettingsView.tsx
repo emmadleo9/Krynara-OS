@@ -236,7 +236,7 @@ export function SettingsView() {
         </p>
         <div className="storage-status-grid">
           <div className="settings-key-head">
-            <span className="status-dot" />
+            <span className={`status-dot${storageStatus.directorySelected ? '' : ' status-dot-offline'}`} />
             <strong>DISK {realStorage?.drive?.mount || 'D:'}: {realStorage?.drive?.usedGb || '--'} GB USED OF {realStorage?.drive?.totalGb || '--'} GB ({realStorage?.drive?.usedPercent ?? 0}%)</strong>
           </div>
           <div id="quota-bar" className="quota-bar" role="progressbar" aria-valuenow={realStorage?.drive?.usedPercent ?? 0} aria-valuemin={0} aria-valuemax={100}>
