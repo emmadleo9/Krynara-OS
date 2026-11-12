@@ -9,5 +9,12 @@
     "start": "node scripts/start-singularity.js",
     "gateway": "node gateway/index.js",
     "console": "npm --prefix console run dev:fast"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
   }
 }
