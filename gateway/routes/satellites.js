@@ -15,7 +15,7 @@ function register(app) {
     if (cached && Date.now() - cached.time < 10_000) return res.json(cached.data);
     const satellites = await Promise.all(SAT_IDS.map(async ({ id, name }) => {
       try {
-        const response = await fetch(`https://api.wheretheiss.at/v1/satellites/${id}`, { signal: AbortSignal.timeout(8000) });
+        const response = await fetch(`https://api.wheretheiss.at/v1/satellites/${id}`, { signal: AbortSignal.timeout(2500) });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         return { id, name, lat: data.latitude, lon: data.longitude, altitude: data.altitude, velocity: data.velocity, at: data.timestamp };

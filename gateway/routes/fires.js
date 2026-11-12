@@ -9,7 +9,7 @@ module.exports = {
     app.get('/api/feeds/fires', async (_req, res) => {
       if (cache && Date.now() - cacheTime < 10 * 60_000) return res.json(cache);
       try {
-        const response = await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires&status=open&limit=200', { signal: AbortSignal.timeout(15_000) });
+        const response = await fetch('https://eonet.gsfc.nasa.gov/api/v3/events?category=wildfires&status=open&limit=200', { signal: AbortSignal.timeout(3000) });
         if (!response.ok) throw new Error(`EONET returned HTTP ${response.status}`);
         const data = await response.json();
         const events = (data.events ?? []).map((event) => {

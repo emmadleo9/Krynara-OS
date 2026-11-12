@@ -20,7 +20,7 @@ function register(app) {
       sort: 'DateDesc',
     });
     try {
-      const response = await fetch(`https://api.gdeltproject.org/api/v2/doc/doc?${params}`, { signal: AbortSignal.timeout(15_000) });
+      const response = await fetch(`https://api.gdeltproject.org/api/v2/doc/doc?${params}`, { signal: AbortSignal.timeout(3000) });
       if (!response.ok) throw new Error(`GDELT returned HTTP ${response.status}`);
       const text = await response.text();
       let data;

@@ -1,4 +1,4 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { HudFrame } from '@/components/hud';
 import { KrynaraWhatsApp } from '@/features/social/KrynaraWhatsApp';
 import { TelegramLive } from '@/features/social/TelegramLive';
@@ -64,6 +64,15 @@ export function SocialHub() {
   const selectedChats = chats[platform];
   const selectedChat = useMemo(() => selectedChats.find((chat) => chat.id === chatId) ?? selectedChats[0], [chatId, selectedChats]);
 
+  useEffect(() => {
+    fetch('/api/telegram/status')
+      .then((r) => r.json())
+      .then((data: { authorized?: boolean }) => {
+        if (data.authorized) setStatuses((s) => ({ ...s, TELEGRAM: 'online' }));
+      })
+      .catch(() => {});
+  }, []);
+
   const saveCredential = (key: CredentialKey, value: string) => {
     localStorage.setItem(key, value);
     setCredentials((current) => ({ ...current, [key]: value }));
@@ -74,12 +83,22 @@ export function SocialHub() {
     setTesting(true);
     setTestMessage('');
     try {
+      if (platform === 'TELEGRAM') {
+        const response = await fetch('/api/telegram/status');
+        const data = await response.json() as { authorized?: boolean; user?: { first_name?: string; username?: string }; error?: string };
+        if (data.authorized) {
+          setStatuses((current) => ({ ...current, TELEGRAM: 'online' }));
+          setTestMessage(`Connected to Telegram via TDLib as ${data.user?.first_name || 'User'}${data.user?.username ? ` (@${data.user.username})` : ''}.`);
+        } else {
+          setStatuses((current) => ({ ...current, TELEGRAM: 'offline' }));
+          setTestMessage(data.error || 'Telegram session is not authorized. Link account in Settings > Telegram.');
+        }
+        return;
+      }
+
       let url = '';
       const headers = new Headers();
-      if (platform === 'TELEGRAM') {
-        if (!credentials.telegram_bot_token) throw new Error('Enter the Telegram bot token first.');
-        url = `https://api.telegram.org/bot${encodeURIComponent(credentials.telegram_bot_token)}/getMe`;
-      } else if (platform === 'INSTAGRAM') {
+      if (platform === 'INSTAGRAM') {
         const { instagram_user_id: userId, instagram_token: token } = credentials;
         if (!userId || !token) throw new Error('Enter the Instagram user ID and access token first.');
         url = `https://graph.facebook.com/v23.0/${encodeURIComponent(userId)}?fields=id,username`;

@@ -160,7 +160,7 @@ async function loadFeed(feed) {
     request = (async () => {
       const response = await fetch(feed.url, {
         headers: { 'User-Agent': 'Krynara-OS World View', ...(feed.headers ?? {}) },
-        signal: AbortSignal.timeout(12_000),
+        signal: AbortSignal.timeout(2500),
       });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const declaredSize = Number(response.headers.get('content-length'));

@@ -19,7 +19,7 @@ function register(app) {
 
     try {
       if (!rainRadarRequest) {
-        rainRadarRequest = fetch(RAIN_RADAR_URL, { signal: AbortSignal.timeout(10_000) })
+        rainRadarRequest = fetch(RAIN_RADAR_URL, { signal: AbortSignal.timeout(3000) })
           .then(async (response) => {
             if (!response.ok) throw new Error(`RainViewer returned HTTP ${response.status}`);
             const feed = await response.json();
@@ -70,7 +70,7 @@ function register(app) {
       if (!request) {
         request = fetch(ALERTS_URL, {
           headers: { 'User-Agent': 'Krynara-OS World View' },
-          signal: AbortSignal.timeout(12_000),
+          signal: AbortSignal.timeout(3000),
         }).then(async (response) => {
           if (!response.ok) throw new Error(`NOAA returned HTTP ${response.status}`);
           const feed = await response.json();

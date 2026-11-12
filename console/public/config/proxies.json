@@ -1,0 +1,13 @@
+{
+  "lastRefreshed": "2026-11-12T23:00:00.000Z",
+  "totalCount": 6,
+  "workingCount": 5,
+  "proxies": [
+    { "type": "mtproto", "host": "proxy.digitalresistance.dog", "port": 443, "secret": "d41d8cd98f00b204e9800998ecf8427e", "label": "Digital Resistance MTProto" },
+    { "type": "mtproto", "host": "149.154.175.50", "port": 443, "secret": "ee1111111111111111111111111111111173332e676f6f676c652e636f6d", "label": "Cloudflare MTProto" },
+    { "type": "socks5", "host": "127.0.0.1", "port": 10808, "label": "Local SOCKS5 (v2ray/Xray)" },
+    { "type": "socks5", "host": "127.0.0.1", "port": 1080, "label": "Local SOCKS5 (Shadowsocks)" },
+    { "type": "socks5", "host": "127.0.0.1", "port": 9050, "label": "Tor SOCKS5" },
+    { "type": "http", "host": "127.0.0.1", "port": 8080, "label": "Local HTTP Proxy" }
+  ]
+}

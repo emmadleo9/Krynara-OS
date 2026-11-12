@@ -52,7 +52,7 @@ function formatCheckTime() {
 
 type CheckConfig = Pick<ApiCheck, 'name' | 'url' | 'tokenKey' | 'userIdKey' | 'statusField' | 'availabilityField' | 'expectedFeed'>;
 
-const CHECK_CONCURRENCY = 4;
+const CHECK_CONCURRENCY = 12;
 
 async function checkApi(check: CheckConfig): Promise<ApiCheck> {
   const start = performance.now();
@@ -85,7 +85,7 @@ async function checkApi(check: CheckConfig): Promise<ApiCheck> {
 
 async function performCheck(check: CheckConfig, url: string, headers: Headers, start: number, checkedAt: string): Promise<ApiCheck> {
   try {
-    const response = await fetch(url, { headers, signal: AbortSignal.timeout(15_000), cache: 'no-store' });
+    const response = await fetch(url, { headers, signal: AbortSignal.timeout(3500), cache: 'no-store' });
     const latency = Math.round(performance.now() - start);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const body = await response.json().catch(() => null) as ({ [key: string]: unknown; ok?: boolean; error?: { message?: string } } | null);
@@ -111,12 +111,15 @@ async function performCheck(check: CheckConfig, url: string, headers: Headers, s
     }
     return { ...check, status: 'online', latency, lastChecked: checkedAt, detail: 'ENDPOINT RESPONDED' };
   } catch (reason) {
+    const latency = Math.round(performance.now() - start);
+    const msg = reason instanceof Error ? reason.message : String(reason);
+    const isTimeout = msg.includes('aborted') || msg.includes('timeout') || latency >= 3500;
     return {
       ...check,
       status: 'offline',
-      latency: Math.round(performance.now() - start),
+      latency: Math.min(latency, 3500),
       lastChecked: checkedAt,
-      detail: reason instanceof Error ? reason.message : String(reason),
+      detail: isTimeout ? 'TIMEOUT (>3.5s) // REMOTE DELAY' : msg.toUpperCase(),
     };
   }
 }
