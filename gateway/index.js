@@ -41,8 +41,14 @@ const native = require('./native/client');
 
 const app = express();
 const server = createServer(app);
-server.requestTimeout = 12 * 60 * 60 * 1000;
-server.timeout = 0;
+// Bound every stage of a connection. The previous 12-hour requestTimeout let a
+// single stuck client hold a socket (and its session) indefinitely.
+server.requestTimeout = 30_000;      // total time to receive a full request
+server.headersTimeout = 15_000;      // time to receive headers
+server.keepAliveTimeout = 5_000;     // idle keep-alive window
+server.connectionsCheckingInterval = 10_000;
+// server.timeout stays at its default (0 = no socket inactivity limit) so long
+// SSE/telemetry streams are not cut; requestTimeout above bounds the request.
 const port = Number(process.env.GATEWAY_PORT || process.env.KRYNARA_PORT || 2785);
 const consolePort = Number(process.env.CONSOLE_PORT || 5173);
 
@@ -193,24 +199,43 @@ async function loadAircraft() {
 
   const collected = [];
   const seenHex = new Set();
-  for (const [index, [latitude, longitude]] of flightRegions.entries()) {
-    if (index > 0) await new Promise((resolve) => setTimeout(resolve, 1100));
-    const url = `https://api.adsb.lol/v2/lat/${latitude}/lon/${longitude}/dist/250`;
-    const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
-    if (!response.ok) {
-      log(`ADS-B regional source returned HTTP ${response.status}`);
-      continue;
+
+  // Sweep regions with bounded concurrency. Previously this was strictly
+  // sequential with an 1100ms sleep between regions — 7 regions cost 6.6s of
+  // pure waiting. Three at a time keeps us under api.adsb.lol's rate limit
+  // without the dead time.
+  const REGION_CONCURRENCY = 3;
+  let cursor = 0;
+  let done = false;
+
+  const lane = async () => {
+    while (!done) {
+      const index = cursor++;
+      if (index >= flightRegions.length || done) return;
+      const [latitude, longitude] = flightRegions[index];
+      const url = `https://api.adsb.lol/v2/lat/${latitude}/lon/${longitude}/dist/250`;
+      try {
+        const response = await fetch(url, { signal: AbortSignal.timeout(10000) });
+        if (!response.ok) {
+          log(`ADS-B regional source returned HTTP ${response.status}`);
+          continue;
+        }
+        const data = await response.json();
+        for (const item of data.ac || []) {
+          // Mirror the JS Map guard: only truthy hex values are tracked. The Set
+          // is used solely to decide when to stop sweeping regions.
+          if (item && typeof item.hex === 'string' && item.hex) seenHex.add(item.hex);
+          collected.push(item);
+          if (seenHex.size >= 400) { done = true; return; }
+        }
+      } catch (error) {
+        log(`ADS-B regional source failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
     }
-    const data = await response.json();
-    for (const item of data.ac || []) {
-      // Mirror the JS Map guard: only truthy hex values are tracked. The Set is
-      // used solely to decide when to stop sweeping regions.
-      if (item && typeof item.hex === 'string' && item.hex) seenHex.add(item.hex);
-      collected.push(item);
-      if (seenHex.size >= 400) break;
-    }
-    if (seenHex.size >= 400) break;
-  }
+  };
+
+  await Promise.all(Array.from({ length: Math.min(REGION_CONCURRENCY, flightRegions.length) }, lane));
+
   if (!collected.length) throw new Error('Primary and regional ADS-B sources returned no aircraft.');
 
   // Fast path: Rust sidecar performs the Map-equivalent merge. Falls back to the
@@ -245,9 +270,34 @@ async function loadGdeltEvents() {
   const updates = await updatesResponse.text();
   const archiveUrl = updates.split(/\r?\n/).map((line) => line.trim().split(/\s+/).pop()).find((url) => url && url.endsWith('.export.CSV.zip'));
   if (!archiveUrl) throw new Error('GDELT index did not list an events archive.');
-  const archiveResponse = await fetch(archiveUrl.replace(/^http:/, 'https:'), { signal: AbortSignal.timeout(20000) });
-  if (!archiveResponse.ok) throw new Error(`GDELT archive returned HTTP ${archiveResponse.status}`);
-  const archiveBuffer = Buffer.from(await archiveResponse.arrayBuffer());
+
+  const httpsUrl = archiveUrl.replace(/^http:/, 'https:');
+
+  // GDELT publishes one archive per 15-minute window and keeps it at a stable
+  // URL for that window. Cache the downloaded bytes on disk keyed by URL so a
+  // refresh inside the same window skips the multi-MB download entirely.
+  let archiveBuffer;
+  const cacheFile = path.join(os.tmpdir(), 'krynara-gdelt-cache', `${crypto.createHash('sha1').update(httpsUrl).digest('hex')}.zip`);
+  try {
+    const cached = await fs.promises.readFile(cacheFile);
+    if (cached.length > 0) {
+      archiveBuffer = cached;
+      log(`GDELT archive served from disk cache (${(cached.length / 1024 / 1024).toFixed(1)} MB)`);
+    }
+  } catch {
+    /* not cached yet */
+  }
+
+  if (!archiveBuffer) {
+    const archiveResponse = await fetch(httpsUrl, { signal: AbortSignal.timeout(20000) });
+    if (!archiveResponse.ok) throw new Error(`GDELT archive returned HTTP ${archiveResponse.status}`);
+    archiveBuffer = Buffer.from(await archiveResponse.arrayBuffer());
+    // Persist for the next refresh in the same window. Best effort: a write
+    // failure must not fail the request.
+    fs.promises.mkdir(path.dirname(cacheFile), { recursive: true })
+      .then(() => fs.promises.writeFile(cacheFile, archiveBuffer))
+      .catch(() => { /* disk full / permissions — ignore */ });
+  }
 
   // Fast path: Rust sidecar inflates + parses the CSV. Falls back to the
   // JavaScript implementation below on any failure.
@@ -467,3 +517,19 @@ const startGateway = () => {
 };
 if (restartDelay > 0) setTimeout(startGateway, restartDelay);
 else startGateway();
+
+// Shut down cleanly so children (Telegram bridge, native sidecar) are not left
+// orphaned holding ports 2787/2790 — Windows does not kill children on parent
+// exit, so without this every restart leaks processes and hits EADDRINUSE.
+let shuttingDown = false;
+const shutdown = (signal) => {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log(`received ${signal}; shutting down`);
+  try { native.stop(); } catch { /* best effort */ }
+  try { if (serverRef) serverRef.close(); } catch { /* best effort */ }
+  // Give the OS a moment to release sockets before exit.
+  setTimeout(() => process.exit(0), 500).unref?.();
+};
+process.on('SIGINT', () => shutdown('SIGINT'));
+process.on('SIGTERM', () => shutdown('SIGTERM'));

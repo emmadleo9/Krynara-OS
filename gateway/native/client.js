@@ -132,4 +132,18 @@ async function refresh() {
   return available;
 }
 
-module.exports = { start, call, probe, refresh, isEnabled, isAvailable, BASE_URL, BINARY_PATH };
+/** Kill the sidecar child, if we own one. Called on gateway shutdown so no
+ *  orphaned krynara-native.exe is left holding port 2790. */
+function stop() {
+  if (child) {
+    try {
+      child.kill();
+    } catch {
+      /* already gone */
+    }
+    child = null;
+  }
+  available = false;
+}
+
+module.exports = { start, call, probe, refresh, isEnabled, isAvailable, BASE_URL, BINARY_PATH, stop };
