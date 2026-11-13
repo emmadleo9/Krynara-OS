@@ -55,7 +55,9 @@ pub fn dedupe(body: &[u8]) -> Result<Value, String> {
 }
 
 /// Merges pre-fetched regional batches with the same semantics, stopping as
-/// soon as 400 unique aircraft have been collected.
+/// soon as 400 unique aircraft have been collected. Exercised by tests; the
+/// live path passes one flat array to `dedupe`.
+#[allow(dead_code)]
 pub fn merge_batches(batches: &[Value]) -> Value {
     let mut index: HashMap<String, usize> = HashMap::new();
     let mut out: Vec<Value> = Vec::new();
