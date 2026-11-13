@@ -1,3 +1,5 @@
+/**
+ * KRYNARA gateway <-> Social Hub Telegram bridge.
  * Forwards /api/telegram/* to the real TDLib bridge (node socialhub-server.js
  * in scripts/socialhub-server.js, port 2787).
  */
