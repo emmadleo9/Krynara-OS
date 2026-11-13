@@ -32,8 +32,9 @@ pub fn sample() -> Value {
 
     let memory_used = sys.used_memory();
     let memory_total = sys.total_memory();
+    // JS: Math.round((used / total) * 1000) / 10  ==  round1(ratio * 100)
     let memory_load = if memory_total > 0 {
-        round1(memory_used as f64 / memory_total as f64 * 1000.0)
+        round1(memory_used as f64 / memory_total as f64 * 100.0)
     } else {
         0.0
     };
@@ -47,8 +48,9 @@ pub fn sample() -> Value {
         disk_total = disk_total.saturating_add(total);
         disk_used = disk_used.saturating_add(total.saturating_sub(available));
     }
+    // JS: Math.round((diskUsed / diskTotal) * 1000) / 10  ==  round1(ratio * 100)
     let disk_load = if disk_total > 0 {
-        round1(disk_used as f64 / disk_total as f64 * 1000.0)
+        round1(disk_used as f64 / disk_total as f64 * 100.0)
     } else {
         0.0
     };
@@ -133,5 +135,16 @@ mod tests {
             assert!(value.get(field).is_some(), "missing {field}");
         }
         assert!(value["memoryTotalGb"].as_f64().unwrap_or(0.0) > 0.0);
+    }
+
+    #[test]
+    fn percentage_fields_are_within_bounds() {
+        // Guards the JS parity rule Math.round(ratio * 1000) / 10, i.e. a
+        // 0-100 percentage rather than a 0-1000 per-mille value.
+        let value = sample();
+        for field in ["cpuLoad", "memoryLoad", "diskLoad"] {
+            let v = value[field].as_f64().expect("numeric");
+            assert!(v >= 0.0 && v <= 100.0, "{field} out of range: {v}");
+        }
     }
 }

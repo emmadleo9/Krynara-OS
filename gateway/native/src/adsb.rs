@@ -43,6 +43,7 @@ pub fn dedupe(body: &[u8]) -> Result<Value, String> {
 
 /// Merges pre-fetched regional batches, mirroring the JS loop that breaks as
 /// soon as 400 unique aircraft are reached.
+#[allow(dead_code)]
 pub fn merge_batches(batches: &[Value]) -> Value {
     let mut seen: HashSet<String> = HashSet::new();
     let mut out: Vec<Value> = Vec::new();

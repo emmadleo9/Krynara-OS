@@ -10,6 +10,9 @@ pub struct Cursor {
     pub end: usize,
 }
 
+/// Mirrors `readVarint` from the JS decoder, kept for API parity with the
+/// original module. Only the `u64` variant is used by the decoder itself.
+#[allow(dead_code)]
 pub fn read_varint(bytes: &[u8], cursor: &mut Cursor) -> Result<f64, String> {
     let mut value: f64 = 0.0;
     let mut scale: f64 = 1.0;

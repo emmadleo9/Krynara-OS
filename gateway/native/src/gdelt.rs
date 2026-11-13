@@ -21,7 +21,7 @@ const MAX_FEATURES: usize = 150;
 /// CSV member, so we locate the first local file header and inflate its
 /// deflate stream. Falls back to the stored (uncompressed) representation.
 fn first_zip_entry(zip: &[u8]) -> Result<Vec<u8>, String> {
-    let mut offset = 0usize;
+    let offset = 0usize;
     while offset + 30 <= zip.len() {
         // Local file header signature "PK\x03\x04"
         if zip[offset] != 0x50 || zip[offset + 1] != 0x4b || zip[offset + 2] != 0x03 || zip[offset + 3] != 0x04 {
