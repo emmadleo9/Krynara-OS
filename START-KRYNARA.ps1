@@ -3,6 +3,27 @@ $root = $PSScriptRoot
 $runtime = Join-Path $env:LOCALAPPDATA 'Krynara-OS\runtime'
 New-Item -ItemType Directory -Force -Path $runtime | Out-Null
 
+# --- Free the required ports (2785, 2786, 5173) -------------------------------
+# Uses PowerShell-native checks only (Get-NetTCPConnection), never findstr/netstat,
+# so a FREE port can never look like a failed command in the VS Code terminal.
+foreach ($port in @(2785, 2786, 5173)) {
+    $connections = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
+    if ($connections) {
+        $killedPids = @()
+        foreach ($connection in $connections) {
+            $pid = $connection.OwningProcess
+            if ($pid -and $pid -ne $PID -and $killedPids -notcontains $pid) {
+                $killedPids += $pid
+                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            }
+        }
+        Start-Sleep -Seconds 1
+        Write-Host "[Krynara-OS] Port $port was busy, killed old process, now free" -ForegroundColor Yellow
+    } else {
+        Write-Host "[Krynara-OS] Port $port is FREE - ready" -ForegroundColor Green
+    }
+}
+
 # --- Prerequisites -----------------------------------------------------------
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     throw 'Node.js is required. Install Node.js (>=22.19), then run MASTER START Krynara-OS V.04.bat again.'
@@ -64,5 +85,6 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host '[Krynara-OS] Startup complete.'
+Write-Host '[Krynara-OS] Krynara-OS started - Open http://localhost:5173' -ForegroundColor Green
 Write-Host '[Krynara-OS] Console: http://localhost:5173'
 Write-Host '[Krynara-OS] Gateway: http://127.0.0.1:2785'
