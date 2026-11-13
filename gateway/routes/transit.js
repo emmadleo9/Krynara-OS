@@ -1,3 +1,9 @@
+const native = require('../native/client');
+
+function log(message) {
+  console.log(`[transit] ${message}`);
+}
+
 const FEEDS = [
   { id: 'mta-new-york', name: 'MTA New York City buses', bounds: [-74.3, 40.48, -73.68, 40.95], url: 'https://gtfsrt.prod.obanyc.com/vehiclePositions', mode: 'bus' },
   { id: 'septa-philadelphia', name: 'SEPTA Philadelphia', bounds: [-75.8347, 39.8123, -74.7542, 40.334], url: 'https://www3.septa.org/gtfsrt/septa-pa-us/Vehicle/rtVehiclePosition.pb', mode: 'bus' },
@@ -167,6 +173,20 @@ async function loadFeed(feed) {
       if (Number.isFinite(declaredSize) && declaredSize > MAX_BYTES) throw new Error('Transit feed exceeded the size limit');
       const bytes = new Uint8Array(await response.arrayBuffer());
       if (bytes.length > MAX_BYTES) throw new Error('Transit feed exceeded the size limit');
+      // Fast path: Rust protobuf decoder. Falls back to the JS decoder below.
+      if (native.isEnabled()) {
+        try {
+          const decoded = await native.call('/transit/decode', bytes, 5000);
+          if (Array.isArray(decoded)) {
+            const data = decoded.map((vehicle) => ({ ...vehicle, mode: feed.mode, source: feed.name }));
+            const entry = { time: Date.now(), data };
+            cache.set(feed.id, entry);
+            return entry;
+          }
+        } catch (error) {
+          log(`transit native decode unavailable for ${feed.id}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
       const data = decodeVehicles(bytes).map((vehicle) => ({ ...vehicle, mode: feed.mode, source: feed.name }));
       const entry = { time: Date.now(), data };
       cache.set(feed.id, entry);

@@ -37,6 +37,7 @@ const localAiRoute = require('./routes/local-ai');
 const onlineAiRoute = require('./routes/online-ai');
 const telegramRoute = require('./routes/telegram');
 const storageStatsRoute = require('./routes/storage-stats');
+const native = require('./native/client');
 
 const app = express();
 const server = createServer(app);
@@ -44,6 +45,11 @@ server.requestTimeout = 12 * 60 * 60 * 1000;
 server.timeout = 0;
 const port = Number(process.env.GATEWAY_PORT || process.env.KRYNARA_PORT || 2785);
 const consolePort = Number(process.env.CONSOLE_PORT || 5173);
+
+// Start the native compute sidecar (Rust) if it was built. Every call site
+// falls back to the JavaScript implementation when the sidecar is unavailable.
+native.start();
+void native.refresh();
 const allowedOrigins = new Set([
   `http://localhost:${consolePort}`,
   `http://127.0.0.1:${consolePort}`,
@@ -214,7 +220,22 @@ async function loadGdeltEvents() {
   if (!archiveUrl) throw new Error('GDELT index did not list an events archive.');
   const archiveResponse = await fetch(archiveUrl.replace(/^http:/, 'https:'), { signal: AbortSignal.timeout(20000) });
   if (!archiveResponse.ok) throw new Error(`GDELT archive returned HTTP ${archiveResponse.status}`);
-  const archive = new AdmZip(Buffer.from(await archiveResponse.arrayBuffer()));
+  const archiveBuffer = Buffer.from(await archiveResponse.arrayBuffer());
+
+  // Fast path: Rust sidecar inflates + parses the CSV. Falls back to the
+  // JavaScript implementation below on any failure.
+  if (native.isEnabled()) {
+    try {
+      const parsed = await native.call('/gdelt/parse', archiveBuffer, 10_000);
+      if (parsed && Array.isArray(parsed.features)) {
+        return { ...parsed, updatedAt: new Date().toISOString() };
+      }
+    } catch (error) {
+      log(`gdelt native parse unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const archive = new AdmZip(archiveBuffer);
   const entry = archive.getEntries()[0];
   if (!entry) throw new Error('GDELT archive was empty.');
 
@@ -302,7 +323,16 @@ app.get('/api/system-stats', async (_req, res) => {
     let stats = statsCache;
     if (!stats || Date.now() - statsCacheTime >= 1000) {
       if (!statsRequest) {
-        statsRequest = Promise.all([si.currentLoad(), si.mem(), si.battery(), si.fsSize()]).then(([load, memory, battery, filesystems]) => {
+        statsRequest = (async () => {
+          // Fast path: Rust sysinfo sampler. Falls back to systeminformation.
+          if (native.isEnabled()) {
+            try {
+              return await native.call('/system-stats', undefined, 3000);
+            } catch (error) {
+              log(`system stats native unavailable: ${error instanceof Error ? error.message : String(error)}`);
+            }
+          }
+          const [load, memory, battery, filesystems] = await Promise.all([si.currentLoad(), si.mem(), si.battery(), si.fsSize()]);
           const diskTotal = filesystems.reduce((sum, filesystem) => sum + (filesystem.size || 0), 0);
           const diskUsed = filesystems.reduce((sum, filesystem) => sum + (filesystem.used || 0), 0);
           return {
@@ -317,7 +347,7 @@ app.get('/api/system-stats', async (_req, res) => {
             batteryCharging: battery.hasBattery ? battery.isCharging : null,
             timestamp: new Date().toISOString(),
           };
-        });
+        })();
       }
       try {
         stats = await statsRequest;
