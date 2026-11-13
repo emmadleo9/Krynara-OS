@@ -191,7 +191,8 @@ async function loadAircraft() {
   }
   log(`ADS-B global endpoint unavailable (HTTP ${primary.status}); using regional public feeds`);
 
-  const aircraft = new Map();
+  const collected = [];
+  const seenHex = new Set();
   for (const [index, [latitude, longitude]] of flightRegions.entries()) {
     if (index > 0) await new Promise((resolve) => setTimeout(resolve, 1100));
     const url = `https://api.adsb.lol/v2/lat/${latitude}/lon/${longitude}/dist/250`;
@@ -202,10 +203,36 @@ async function loadAircraft() {
     }
     const data = await response.json();
     for (const item of data.ac || []) {
-      if (item.hex) aircraft.set(item.hex, item);
-      if (aircraft.size >= 400) break;
+      // Mirror the JS Map guard: only truthy hex values are tracked. The Set is
+      // used solely to decide when to stop sweeping regions.
+      if (item && typeof item.hex === 'string' && item.hex) seenHex.add(item.hex);
+      collected.push(item);
+      if (seenHex.size >= 400) break;
     }
-    if (aircraft.size >= 400) break;
+    if (seenHex.size >= 400) break;
+  }
+  if (!collected.length) throw new Error('Primary and regional ADS-B sources returned no aircraft.');
+
+  // Fast path: Rust sidecar performs the Map-equivalent merge. Falls back to the
+  // JavaScript merge below on any failure.
+  if (native.isEnabled()) {
+    try {
+      const payload = Buffer.from(JSON.stringify(collected));
+      const merged = await native.call('/adsb/dedupe', payload, 5000);
+      if (Array.isArray(merged)) {
+        log(`ADS-B regional fallback supplied ${merged.length} aircraft`);
+        return { ac: merged.slice(0, 400), total: merged.length, source: 'adsb.lol regional sweep' };
+      }
+    } catch (error) {
+      log(`adsb native merge unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // JS fallback: exact Map semantics (case-sensitive, last value wins, first
+  // position kept, hex-less entries dropped).
+  const aircraft = new Map();
+  for (const item of collected) {
+    if (item && typeof item.hex === 'string' && item.hex) aircraft.set(item.hex, item);
   }
   if (!aircraft.size) throw new Error('Primary and regional ADS-B sources returned no aircraft.');
   log(`ADS-B regional fallback supplied ${aircraft.size} aircraft`);
