@@ -125,41 +125,25 @@ fn handle(mut stream: TcpStream) -> Result<(), String> {
         },
         ("POST", "/transit/decode") => match transit::decode_vehicles(&request.body) {
             Ok(vehicles) => {
+                // Already flattened by the decoder, matching readVehicle() in
+                // transit.js: { id, label, route, lat, lon, bearing, speed, timestamp }.
                 let json: Vec<serde_json::Value> = vehicles
                     .iter()
-                    .map(|vehicle| {
+                    .map(|v| {
                         let mut map = serde_json::Map::new();
-                        if let Some(route) = &vehicle.route {
-                            map.insert("route".to_string(), serde_json::Value::String(route.clone()));
+                        map.insert("id".to_string(), serde_json::Value::String(v.id.clone()));
+                        map.insert("label".to_string(), serde_json::Value::String(v.label.clone()));
+                        map.insert("route".to_string(), serde_json::Value::String(v.route.clone()));
+                        map.insert("lat".to_string(), serde_json::json!(v.lat as f64));
+                        map.insert("lon".to_string(), serde_json::json!(v.lon as f64));
+                        if let Some(bearing) = v.bearing {
+                            map.insert("bearing".to_string(), serde_json::json!(bearing as f64));
                         }
-                        if let Some(position) = &vehicle.position {
-                            let mut p = serde_json::Map::new();
-                            if let Some(lat) = position.lat {
-                                map_insert_f32(&mut p, "lat", lat);
-                            }
-                            if let Some(lon) = position.lon {
-                                map_insert_f32(&mut p, "lon", lon);
-                            }
-                            if let Some(bearing) = position.bearing {
-                                map_insert_f32(&mut p, "bearing", bearing);
-                            }
-                            if let Some(speed) = position.speed {
-                                map_insert_f32(&mut p, "speed", speed);
-                            }
-                            map.insert("position".to_string(), serde_json::Value::Object(p));
+                        if let Some(speed) = v.speed {
+                            map.insert("speed".to_string(), serde_json::json!(speed as f64));
                         }
-                        if let Some(timestamp) = vehicle.timestamp {
+                        if let Some(timestamp) = v.timestamp {
                             map.insert("timestamp".to_string(), serde_json::json!(timestamp));
-                        }
-                        if let Some(descriptor) = &vehicle.descriptor {
-                            let mut d = serde_json::Map::new();
-                            if let Some(id) = &descriptor.id {
-                                d.insert("id".to_string(), serde_json::Value::String(id.clone()));
-                            }
-                            if let Some(label) = &descriptor.label {
-                                d.insert("label".to_string(), serde_json::Value::String(label.clone()));
-                            }
-                            map.insert("descriptor".to_string(), serde_json::Value::Object(d));
                         }
                         serde_json::Value::Object(map)
                     })
@@ -190,9 +174,4 @@ fn handle(mut stream: TcpStream) -> Result<(), String> {
     stream.write_all(&body).map_err(|e| e.to_string())?;
     stream.flush().ok();
     Ok(())
-}
-
-fn map_insert_f32(map: &mut serde_json::Map<String, serde_json::Value>, key: &str, value: f32) {
-    // f32 -> JSON number via f64 keeps JS `Number` parity (both are doubles).
-    map.insert(key.to_string(), serde_json::json!(value as f64));
 }
