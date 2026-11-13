@@ -1,6 +1,0 @@
-◇ injected env (10) from .env.local
-◇ injected env (32) from ..\.env
-◇ injected env (0) from ..\gateway\.env.local
-◇ injected env (3) from ..\gateway\.env
-Error: listen tcp 127.0.0.1:11434: bind: Only one usage of each socket address (protocol/network address/port) is normally permitted.
-[Krynara-OS] Ollama exited with code 1.
