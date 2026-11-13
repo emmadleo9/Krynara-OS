@@ -70,12 +70,12 @@ pub fn sample() -> Value {
         "diskTotalGb": gib(disk_total),
         "batteryPercent": battery_percent,
         "batteryCharging": battery_charging,
-        "timestamp": chrono_like_timestamp(),
+        "timestamp": now_iso8601(),
     })
 }
 
 /// ISO-8601 UTC with milliseconds and `Z`, matching `new Date().toISOString()`.
-fn chrono_like_timestamp() -> String {
+pub fn now_iso8601() -> String {
     let now = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap_or_default();
@@ -110,7 +110,7 @@ mod tests {
 
     #[test]
     fn timestamp_matches_iso_shape() {
-        let ts = chrono_like_timestamp();
+        let ts = now_iso8601();
         assert_eq!(ts.len(), 24);
         assert!(ts.ends_with('Z'));
         assert_eq!(&ts[4..5], "-");

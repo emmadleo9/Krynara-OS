@@ -3,12 +3,29 @@
  */
 const { execFile } = require('node:child_process');
 const si = require('systeminformation');
+const native = require('../native/client');
 
 let listCache = null;
 let listCacheTime = 0;
 
 async function processList() {
   if (listCache && Date.now() - listCacheTime < 2500) return listCache;
+
+  // Fast path: Rust sysinfo sampler (no wmic subprocess). Falls back to
+  // systeminformation below on any failure.
+  if (native.isEnabled()) {
+    try {
+      const result = await native.call('/system-processes', undefined, 5000);
+      if (result && Array.isArray(result.processes)) {
+        listCache = result;
+        listCacheTime = Date.now();
+        return listCache;
+      }
+    } catch (error) {
+      console.warn(`[system-tasks] native process list unavailable: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   const [load, mem] = await Promise.all([si.currentLoad(), si.mem()]);
   const cpuTotal = load.currentLoad || 0;
   const procs = await si.processes();

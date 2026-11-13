@@ -15,6 +15,7 @@
 
 mod adsb;
 mod gdelt;
+mod processes;
 mod stats;
 mod transit;
 
@@ -114,6 +115,10 @@ fn handle(mut stream: TcpStream) -> Result<(), String> {
         ("GET", "/health") => (200, "application/json", br#"{"ok":true}"#.to_vec()),
         ("GET", "/system-stats") => {
             let value = stats::sample();
+            (200, "application/json", serde_json::to_vec(&value).map_err(|e| e.to_string())?)
+        }
+        ("GET", "/system-processes") => {
+            let value = processes::sample();
             (200, "application/json", serde_json::to_vec(&value).map_err(|e| e.to_string())?)
         }
         ("POST", "/gdelt/parse") => match gdelt::parse_events_zip(&request.body) {
