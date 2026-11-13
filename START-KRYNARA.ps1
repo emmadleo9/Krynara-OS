@@ -11,10 +11,10 @@ foreach ($port in @(2785, 2786, 2787, 5173)) {
     if ($connections) {
         $killedPids = @()
         foreach ($connection in $connections) {
-            $pid = $connection.OwningProcess
-            if ($pid -and $pid -ne $PID -and $killedPids -notcontains $pid) {
-                $killedPids += $pid
-                Stop-Process -Id $pid -Force -ErrorAction SilentlyContinue
+            $owningPid = $connection.OwningProcess
+            if ($owningPid -and $owningPid -ne $PID -and $killedPids -notcontains $owningPid) {
+                $killedPids += $owningPid
+                Stop-Process -Id $owningPid -Force -ErrorAction SilentlyContinue
             }
         }
         Start-Sleep -Seconds 1
