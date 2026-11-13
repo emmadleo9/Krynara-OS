@@ -3,10 +3,10 @@ $root = $PSScriptRoot
 $runtime = Join-Path $env:LOCALAPPDATA 'Krynara-OS\runtime'
 New-Item -ItemType Directory -Force -Path $runtime | Out-Null
 
-# --- Free the required ports (2785, 2786, 5173) -------------------------------
+# --- Free the required ports (2785, 2786, 2787, 5173) -------------------------------
 # Uses PowerShell-native checks only (Get-NetTCPConnection), never findstr/netstat,
 # so a FREE port can never look like a failed command in the VS Code terminal.
-foreach ($port in @(2785, 2786, 5173)) {
+foreach ($port in @(2785, 2786, 2787, 5173)) {
     $connections = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
     if ($connections) {
         $killedPids = @()
