@@ -1,7 +1,5 @@
-/**
- * KRYNARA gateway <-> Social Hub Telegram bridge.
  * Forwards /api/telegram/* to the real TDLib bridge (node socialhub-server.js
- * in D:\Refrences and Codes\tweb, port 2787).
+ * in scripts/socialhub-server.js, port 2787).
  */
 const http = require('node:http');
 const fs = require('node:fs');
@@ -9,7 +7,7 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 
 const TWEB_BRIDGE = 'http://127.0.0.1:2787';
-const TWEB_DIR = 'D:\\Refrences and Codes\\tweb';
+const TWEB_DIR = path.resolve(__dirname, '..', 'scripts');
 
 let bridgeSpawning = false;
 let bridgeSpawned = false;
