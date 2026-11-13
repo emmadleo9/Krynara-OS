@@ -40,6 +40,8 @@ screenshot.png
 .next/
 dist/
 build/
+**/target/
+*.exe
 
 # runtime log files (may contain secrets like bot tokens)
 *.log
