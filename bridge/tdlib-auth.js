@@ -119,7 +119,7 @@ export async function createAuth({ onEvent } = {}) {
   async function handleUpdate(message) {
     switch (message['@type']) {
       case 'updateAuthorizationState': {
-        const authState = message.authorization_state || {};
+        const authState = message.authorization_state || message;
         switch (authState['@type']) {
           case 'authorizationStateWaitPhoneNumber':
             setState('waitphonenumber');
