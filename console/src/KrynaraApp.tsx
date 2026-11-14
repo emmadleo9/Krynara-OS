@@ -1,20 +1,23 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import { BrowserRouter, NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { HudFrame } from '@/components/hud';
 import { Dashboard } from '@/features/dashboard/Dashboard';
 import { DevicesView } from '@/features/devices/DevicesView';
 import { DiagnosticsView } from '@/features/diagnostics/DiagnosticsView';
-import { NewsConflictView } from '@/features/feeds/NewsConflictView';
 import { SocialHub } from '@/features/social/SocialHub';
 import { TimeView } from '@/features/time/TimeView';
-import { WeatherView } from '@/features/weather/WeatherView';
-import { WorldView } from '@/features/world/WorldView';
 import { NovaAssistant } from '@/features/nova/NovaAssistant';
-import { AiStudio } from '@/features/studio/AiStudio';
 import { SettingsView } from '@/features/settings/SettingsView';
 import { KrynaraWhatsApp } from '@/features/social/KrynaraWhatsApp';
 import { SwarmOverlay } from '@/features/swarm/SwarmOverlay';
 import { initKrynaraStorage } from '@/services/persistentStorage';
+
+// MapLibre is ~519 KB and only three views use it. Splitting them out keeps it
+// off the critical path so the dashboard paints without waiting for the map.
+const WorldView = lazy(() => import('@/features/world/WorldView').then((m) => ({ default: m.WorldView })));
+const WeatherView = lazy(() => import('@/features/weather/WeatherView').then((m) => ({ default: m.WeatherView })));
+const NewsConflictView = lazy(() => import('@/features/feeds/NewsConflictView').then((m) => ({ default: m.NewsConflictView })));
+const AiStudio = lazy(() => import('@/features/studio/AiStudio').then((m) => ({ default: m.AiStudio })));
 
 const links = [
   ['/', '◈', 'DASHBOARD'],
@@ -158,21 +161,26 @@ function NotFound() {
   return <HudFrame title="ROUTE ERROR"><div className="hud-value not-found-title">INVALID URL</div><NavLink className="hud-link" to="/">RETURN TO DASHBOARD →</NavLink></HudFrame>;
 }
 
+/** Shown while a lazily-loaded route chunk is fetched. */
+function RouteFallback({ title }: { title: string }) {
+  return <HudFrame title={title}><div className="hud-value not-found-title">LOADING MODULE…</div></HudFrame>;
+}
+
 export default function KrynaraApp() {
   return (
     <BrowserRouter>
       <Shell>
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/world" element={<WorldView />} />
-          <Route path="/weather" element={<WeatherView />} />
-          <Route path="/feeds" element={<NewsConflictView />} />
+          <Route path="/world" element={<Suspense fallback={<RouteFallback title="WORLD VIEW" />}><WorldView /></Suspense>} />
+          <Route path="/weather" element={<Suspense fallback={<RouteFallback title="WEATHER INTEL" />}><WeatherView /></Suspense>} />
+          <Route path="/feeds" element={<Suspense fallback={<RouteFallback title="NEWS & CONFLICT" />}><NewsConflictView /></Suspense>} />
           <Route path="/social" element={<SocialHub />} />
           <Route path="/whatsapp" element={<KrynaraWhatsApp />} />
           <Route path="/scopes" element={<ScopesView />} />
           <Route path="/devices" element={<DevicesView />} />
           <Route path="/time" element={<TimeView />} />
-          <Route path="/ai-studio" element={<AiStudio />} />
+          <Route path="/ai-studio" element={<Suspense fallback={<RouteFallback title="AI STUDIO" />}><AiStudio /></Suspense>} />
           <Route path="/settings" element={<SettingsView />} />
           <Route path="/diagnostics" element={<DiagnosticsView />} />
           <Route path="*" element={<NotFound />} />
