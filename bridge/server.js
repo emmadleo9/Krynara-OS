@@ -66,15 +66,18 @@ function statusBody() {
   return body;
 }
 
-/** Creates the TDLib client on first use and wires the chat/message helpers. */
+/**
+ * Ensures the TDLib client is initialised.
+ *
+ * "Initialised" is not the same as "authorised": on a first login TDLib sits at
+ * waitphonenumber, which is the expected state for CONNECT TELEGRAM. Only the
+ * endpoints that genuinely need an authorised client (chats, history, send)
+ * check `auth.ready` themselves.
+ */
 async function boot() {
-  if (auth && auth.ready) return auth;
-  if (auth && auth.boot) {
-    await auth.boot();
-    if (auth.ready) return auth;
-    throw new Error(`Telegram is not connected. Current state: ${auth.state}. Use CONNECT TELEGRAM in the console first.`);
-  }
-  throw new Error('Telegram bridge is not initialised yet. Retry in a moment.');
+  if (!auth) throw new Error('Telegram bridge is not initialised yet. Retry in a moment.');
+  await auth.boot();
+  return auth;
 }
 
 async function initialise() {
