@@ -181,19 +181,28 @@ export async function createAuth({ onEvent } = {}) {
       const currentType = current?.authorization_state?.['@type'];
 
       if (!current || currentType === 'authorizationStateWaitTdlibParameters') {
-        await client.sendAndWait({
-          '@type': 'setTdlibParameters',
-          use_test_dc: false,
-          database_directory: DB_DIR,
-          files_directory: FILES_DIR,
-          database_encryption_key: '',
-          use_storage_optimizer: true,
-          api_id: apiId,
-          api_hash: apiHash,
-          system_language_code: 'en',
-          device_model: 'Krynara-OS',
-          application_version: '1.0.0',
-        }, 30000);
+        try {
+          await client.sendAndWait({
+            '@type': 'setTdlibParameters',
+            use_test_dc: false,
+            database_directory: DB_DIR,
+            files_directory: FILES_DIR,
+            database_encryption_key: '',
+            use_storage_optimizer: true,
+            api_id: apiId,
+            api_hash: apiHash,
+            system_language_code: 'en',
+            device_model: 'Krynara-OS',
+            application_version: '1.0.0',
+          }, 30000);
+        } catch (error) {
+          // Do not mask this: a rejected api_id leaves TDLib stuck at
+          // waitTdlibParameters, and reporting 'closed' hides the real cause.
+          lastError = error.message;
+          console.warn(`[tdlib] setTdlibParameters failed: ${error.message}`);
+          setState('waittdlibparameters');
+          return auth;
+        }
 
         await client.sendAndWait({ '@type': 'checkDatabaseEncryptedKey', encryption_key: '' }, 15000).catch(() => null);
       }
@@ -209,8 +218,9 @@ export async function createAuth({ onEvent } = {}) {
 
       const authState = await client.sendAndWait({ '@type': 'getAuthorizationState' }, 15000).catch(() => null);
       const authType = authState?.authorization_state?.['@type'];
+      // Only change state when we actually got a definitive answer; otherwise
+      // keep whatever the update stream reported.
       if (authType) setState(authType.replace('authorizationState', '').toLowerCase());
-      else setState('closed');
 
       return auth;
     })();
