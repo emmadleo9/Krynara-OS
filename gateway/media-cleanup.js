@@ -10,6 +10,7 @@
  *
  * Tunable via env:
  *   KRYNARA_MEDIA_RETENTION_DAYS=30   (0 disables age-based deletion)
+ *   KRYNARA_MEDIA_MAX_GB=2            (0 disables the total-size cap)
  *   KRYNARA_MEDIA_SWEEP_HOURS=6
  */
 
@@ -19,8 +20,10 @@ const path = require('node:path');
 const MEDIA_DIR = path.join(__dirname, 'data', 'whatsapp_media');
 
 const RETENTION_DAYS = Number(process.env.KRYNARA_MEDIA_RETENTION_DAYS ?? 30);
+const MAX_GB = Number(process.env.KRYNARA_MEDIA_MAX_GB ?? 2);
 const SWEEP_HOURS = Number(process.env.KRYNARA_MEDIA_SWEEP_HOURS ?? 6);
 const PART_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MAX_BYTES = MAX_GB > 0 ? MAX_GB * 1024 * 1024 * 1024 : Infinity;
 
 function log(message) {
   console.log(`${new Date().toISOString()} ${message}`);
