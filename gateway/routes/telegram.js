@@ -70,19 +70,25 @@ function ensureBridge() {
       if (await bridgeHealthy()) {
         bridgeSpawned = true;
         console.log('[telegram] bridge already healthy on port 2787; reusing it.');
+        await syncCredentialsToBridge();
         return;
       }
-      const scriptPath = path.join(TWEB_DIR, 'socialhub-server.js');
+      const scriptPath = path.join(TWEB_DIR, 'server.js');
       if (!fs.existsSync(scriptPath)) {
         console.warn('[telegram] bridge script not found at', TWEB_DIR);
         return;
       }
-      const child = spawn(process.execPath, ['socialhub-server.js'], {
+      const child = spawn(process.execPath, ['server.js'], {
         cwd: TWEB_DIR,
         windowsHide: true,
         detached: false,
         stdio: ['ignore', 'pipe', 'pipe'],
-        env: { ...process.env, PORT: '2787' },
+        env: {
+          ...process.env,
+          PORT: '2787',
+          TELEGRAM_API_ID: keysRoute.getApiKey('TELEGRAM_API_ID') || '',
+          TELEGRAM_API_HASH: keysRoute.getApiKey('TELEGRAM_API_HASH') || '',
+        },
       });
       bridgeChild = child;
 
