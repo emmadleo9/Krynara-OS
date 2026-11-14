@@ -1,0 +1,15 @@
+{
+  "name": "krynara-bridge",
+  "version": "1.0.0",
+  "description": "Krynara-OS Telegram TDLib bridge (self-contained, in-repo)",
+  "main": "server.js",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "koffi": "^3.3.7",
+    "prebuilt-tdlib": "^0.1008070.0"
+  }
+}
