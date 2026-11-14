@@ -17,7 +17,9 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const MEDIA_DIR = path.join(__dirname, 'data', 'whatsapp_media');
+const MEDIA_DIR = process.env.KRYNARA_MEDIA_DIR
+  ? path.resolve(process.env.KRYNARA_MEDIA_DIR)
+  : path.join(__dirname, 'data', 'whatsapp_media');
 
 const RETENTION_DAYS = Number(process.env.KRYNARA_MEDIA_RETENTION_DAYS ?? 30);
 const MAX_GB = Number(process.env.KRYNARA_MEDIA_MAX_GB ?? 2);
@@ -34,7 +36,9 @@ function log(message) {
  * I/O error can never take the gateway down.
  */
 function sweepMedia() {
-  const summary = { removed: 0, bytes: 0, partRemoved: 0, failed: 0 };
+  const summary = { removed: 0, bytes: 0, partRemoved: 0, failed: 0, sizeCapped: false };
+  const files = [];
+  const removedSet = new Set();
   let entries;
   try {
     entries = fs.readdirSync(MEDIA_DIR, { withFileTypes: true });
@@ -56,6 +60,8 @@ function sweepMedia() {
       continue;
     }
 
+    files.push({ fullPath, name: entry.name, size: stat.size, mtimeMs: stat.mtimeMs });
+
     const age = now - stat.mtimeMs;
     const isPart = entry.name.endsWith('.part');
     const expired = isPart ? age > PART_TTL_MS : age > maxAgeMs;
@@ -66,9 +72,34 @@ function sweepMedia() {
       summary.removed += 1;
       summary.bytes += stat.size;
       if (isPart) summary.partRemoved += 1;
+      removedSet.add(fullPath);
     } catch (error) {
       summary.failed += 1;
       log(`media cleanup: could not delete ${entry.name}: ${error && error.message ? error.message : error}`);
+    }
+  }
+
+  // Total-size cap: age alone does not bound growth on a busy account, so when
+  // the directory is over the cap, delete the oldest survivors until it fits.
+  if (Number.isFinite(MAX_BYTES)) {
+    let total = files.reduce((sum, file) => (removedSet.has(file.fullPath) ? sum : sum + file.size), 0);
+    if (total > MAX_BYTES) {
+      const survivors = files
+        .filter((file) => !removedSet.has(file.fullPath))
+        .sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
+
+      for (const file of survivors) {
+        if (total <= MAX_BYTES) break;
+        try {
+          fs.unlinkSync(file.fullPath);
+          total -= file.size;
+          summary.removed += 1;
+          summary.bytes += file.size;
+        } catch {
+          summary.failed += 1;
+        }
+      }
+      summary.sizeCapped = true;
     }
   }
 
@@ -81,7 +112,8 @@ function startMediaCleanup() {
     const summary = sweepMedia();
     if (summary.removed > 0) {
       const mb = (summary.bytes / 1024 / 1024).toFixed(1);
-      log(`media cleanup: removed ${summary.removed} file(s), ${mb} MB (${summary.partRemoved} partial)`);
+      const cap = summary.sizeCapped ? `, size cap ${MAX_GB} GB enforced` : '';
+      log(`media cleanup: removed ${summary.removed} file(s), ${mb} MB (${summary.partRemoved} partial)${cap}`);
     }
   };
 
