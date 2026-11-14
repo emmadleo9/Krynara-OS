@@ -721,7 +721,11 @@ const server = http.createServer(async (req, res) => {
     res.end(fs.readFileSync(file));
   } catch (err) {
     log(`ERROR ${p}: ${err.message}`);
-    json(res, 500, { error: err.message, tdlib: err.tdlibError || null });
+    // User-input problems are 400s so the console can display them; anything
+    // else is a genuine server fault.
+    const isInputError = err.code === 'PHONE_NUMBER_INVALID'
+      || (err.tdlibError && err.tdlibError.code === 400);
+    json(res, isInputError ? 400 : 500, { error: err.message, tdlib: err.tdlibError || null });
   }
 });
 
