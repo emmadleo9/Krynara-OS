@@ -194,7 +194,7 @@ export async function createAuth({ onEvent } = {}) {
       const currentType = stateTypeOf(current);
 
       if (!currentType || currentType === 'authorizationStateWaitTdlibParameters') {
-        console.log(`[tdlib] initialising with api_id=${apiId} (hash length ${String(apiHash).length}), db=${DB_DIR}`);
+        console.log(`[tdlib] initialising TDLib (hash length ${String(apiHash).length}), db=${DB_DIR}`);
         try {
           const paramsResult = await client.sendAndWait({
             '@type': 'setTdlibParameters',
