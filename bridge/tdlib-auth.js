@@ -276,10 +276,36 @@ export async function createAuth({ onEvent } = {}) {
 
     async sendPhoneNumber(phone) {
       await boot();
+
+      // TDLib only accepts a strict international number: optional leading '+'
+      // followed by 7-15 digits. Anything else (spaces, dashes, brackets, a
+      // missing country code) is rejected as PHONE_NUMBER_INVALID, so normalise
+      // first and explain the problem instead of passing a raw error through.
+      const raw = String(phone ?? '').trim();
+      const compact = raw.replace(/[\s\-().]/g, '');
+      const digits = compact.startsWith('+') ? compact.slice(1) : compact;
+
+      if (!/^\d{7,15}$/.test(digits)) {
+        const error = new Error(
+          `"${raw}" is not a valid international phone number. Use the form +923001234567 ` +
+          '(country code, then the number, with no spaces, dashes or brackets).',
+        );
+        error.code = 'PHONE_NUMBER_INVALID';
+        throw error;
+      }
+
+      const normalized = `+${digits}`;
+      console.log(`[tdlib] requesting code for ${normalized.slice(0, 4)}••• (len ${normalized.length})`);
+
       await client.sendAndWait({
         '@type': 'setAuthenticationPhoneNumber',
-        phone_number: String(phone),
-        settings: { '@type': 'phoneNumberAuthenticationSettings', allow_flash_call: false, allow_missed_call: false, is_current_phone_number: false, allow_bot_verification: false },
+        phone_number: normalized,
+        settings: {
+          '@type': 'phoneNumberAuthenticationSettings',
+          allow_flash_call: false,
+          allow_missed_call: false,
+          is_current_phone_number: false,
+        },
       }, 20000);
       setState('waitcode');
       return true;
