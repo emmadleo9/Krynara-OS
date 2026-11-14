@@ -178,6 +178,9 @@ export async function createAuth({ onEvent } = {}) {
 
   async function boot() {
     if (state === 'ready') return auth;
+    // Already initialised and waiting on the user (phone/code/password): there is
+    // nothing to do, so avoid two extra round-trips per call.
+    if (state !== 'closed' && state !== 'waittdlibparameters' && state !== 'loggingout') return auth;
     if (booting) return booting;
 
     const { apiId, apiHash, configured } = readCredentials();
