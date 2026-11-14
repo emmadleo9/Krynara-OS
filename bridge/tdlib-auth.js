@@ -78,6 +78,19 @@ export function proxyTypeFor(entry) {
   return { '@type': 'proxyTypeSocks5', username: entry.username || '', password: entry.password || '' };
 }
 
+/**
+ * Extracts the authorization-state type from either shape TDLib uses:
+ *   - updates:      { '@type': 'updateAuthorizationState', authorization_state: { '@type': ... } }
+ *   - direct reply: { '@type': 'authorizationStateWaitPhoneNumber' }   (no nesting)
+ */
+function stateTypeOf(message) {
+  if (!message) return null;
+  const direct = message['@type'];
+  if (typeof direct === 'string' && direct.startsWith('authorizationState')) return direct;
+  const nested = message.authorization_state?.['@type'];
+  return typeof nested === 'string' ? nested : null;
+}
+
 export async function createAuth({ onEvent } = {}) {
   fs.mkdirSync(DB_DIR, { recursive: true });
   fs.mkdirSync(FILES_DIR, { recursive: true });
@@ -178,9 +191,9 @@ export async function createAuth({ onEvent } = {}) {
       // getAuthorizationState is safe before parameters are set: it returns
       // authorizationStateWaitTdlibParameters, which we handle by initialising.
       const current = await client.sendAndWait({ '@type': 'getAuthorizationState' }, 10000).catch(() => null);
-      const currentType = current?.authorization_state?.['@type'];
+      const currentType = stateTypeOf(current);
 
-      if (!current || currentType === 'authorizationStateWaitTdlibParameters') {
+      if (!currentType || currentType === 'authorizationStateWaitTdlibParameters') {
         console.log(`[tdlib] initialising with api_id=${apiId} (hash length ${String(apiHash).length}), db=${DB_DIR}`);
         try {
           const paramsResult = await client.sendAndWait({
@@ -219,7 +232,7 @@ export async function createAuth({ onEvent } = {}) {
       }
 
       const authState = await client.sendAndWait({ '@type': 'getAuthorizationState' }, 15000).catch(() => null);
-      const authType = authState?.authorization_state?.['@type'];
+      const authType = stateTypeOf(authState);
       // Only change state when we actually got a definitive answer; otherwise
       // keep whatever the update stream reported.
       if (authType) setState(authType.replace('authorizationState', '').toLowerCase());
