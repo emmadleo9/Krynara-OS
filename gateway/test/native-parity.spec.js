@@ -113,6 +113,43 @@ test('adsb dedupe: rejects non-array', async () => {
 });
 
 // ---------------------------------------------------------------------------
+// Protobuf fixture helpers (little-endian, length-delimited)
+// ---------------------------------------------------------------------------
+
+function varint(value) {
+  const out = [];
+  let v = value;
+  do {
+    let byte = v & 0x7f;
+    v = Math.floor(v / 128);
+    if (v > 0) byte |= 0x80;
+    out.push(byte);
+  } while (v > 0);
+  return Buffer.from(out);
+}
+
+/** wire type 5 (32-bit) field */
+function floatField(fieldNumber, value) {
+  const key = varint((fieldNumber << 3) | 5);
+  const payload = Buffer.alloc(4);
+  payload.writeFloatLE(value, 0);
+  return Buffer.concat([key, payload]);
+}
+
+/** wire type 2 (length-delimited) field */
+function bytesField(fieldNumber, payload) {
+  return Buffer.concat([varint((fieldNumber << 3) | 2), varint(payload.length), payload]);
+}
+
+/** Build a FeedMessage containing one vehicle with the given position. */
+function feedWithVehicle(lat, lon) {
+  const position = Buffer.concat([floatField(1, lat), floatField(2, lon)]);
+  const vehicle = bytesField(2, position);   // field 2 = position
+  const entity = bytesField(4, vehicle);     // field 4 = vehicle
+  return bytesField(2, entity);              // field 2 = entity
+}
+
+// ---------------------------------------------------------------------------
 // Transit decode — shape semantics
 // ---------------------------------------------------------------------------
 
@@ -122,51 +159,35 @@ test('transit decode: empty payload yields empty array', async () => {
   assert.deepEqual(actual, []);
 });
 
-test('transit decode: output objects carry the JS field set', async () => {
+test('transit decode: output matches JSON.stringify of the JS vehicle', async () => {
   if (!requireSidecar()) return;
 
-  // Build a minimal FeedMessage{ header, entity: [ { vehicle: { position: { latitude, longitude } } } ] }
-  // field 1 = header (skip), field 2 = entity (length-delimited)
-  const position = Buffer.from([
-    0x0d, 0x00, 0x00, 0x48, 0x42, // field 1 (latitude), wire 5, float32 50.0
-    0x11, 0x00, 0x00, 0x48, 0x42, // field 2 (longitude), wire 5, float32 50.0
-  ]);
-  const vehicle = Buffer.from([
-    0x12, position.length, ...position, // field 2 = position
-  ]);
-  const entity = Buffer.from([
-    0x22, vehicle.length, ...vehicle, // field 4 = vehicle
-  ]);
-  const feed = Buffer.from([
-    0x12, entity.length, ...entity,   // field 2 = entity
-  ]);
-
-  const actual = await call('/transit/decode', feed);
+  // JS readVehicle returns { id, label, route, lat, lon, bearing, speed, timestamp }.
+  // Keys whose value is undefined (e.g. timestamp when absent) are dropped by
+  // JSON.stringify, so the wire format legitimately omits them.
+  const actual = await call('/transit/decode', feedWithVehicle(50.0, 50.0));
   assert.equal(actual.length, 1);
 
-  const v = actual[0];
-  // JS readVehicle always emits these keys.
-  for (const key of ['id', 'label', 'route', 'lat', 'lon', 'timestamp']) {
-    assert.equal(key in v, true, `missing key ${key}`);
-  }
-  assert.equal(typeof v.lat, 'number');
-  assert.equal(typeof v.lon, 'number');
-  assert.equal(jsVehicleIsValid(v), true);
+  const jsVehicle = {
+    id: '',
+    label: '',
+    route: '',
+    lat: 50.0,
+    lon: 50.0,
+    bearing: undefined,
+    speed: undefined,
+    timestamp: undefined,
+  };
+  const expected = JSON.parse(JSON.stringify(jsVehicle));
+
+  assert.deepEqual(actual[0], expected);
+  assert.equal(jsVehicleIsValid(actual[0]), true);
 });
 
 test('transit decode: drops vehicles with invalid coordinates', async () => {
   if (!requireSidecar()) return;
 
-  // lat/lon both 0 -> JS guard returns null
-  const position = Buffer.from([
-    0x0d, 0x00, 0x00, 0x00, 0x00,
-    0x11, 0x00, 0x00, 0x00, 0x00,
-  ]);
-  const vehicle = Buffer.from([0x12, position.length, ...position]);
-  const entity = Buffer.from([0x22, vehicle.length, ...vehicle]);
-  const feed = Buffer.from([0x12, entity.length, ...entity]);
-
-  const actual = await call('/transit/decode', feed);
+  const actual = await call('/transit/decode', feedWithVehicle(0, 0));
   assert.equal(actual.length, 0, 'vehicle with 0,0 coordinates must be dropped');
 });
 
