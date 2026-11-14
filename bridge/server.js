@@ -722,6 +722,15 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
+server.on('error', (error) => {
+  if (error && error.code === 'EADDRINUSE') {
+    log(`port ${PORT} is already in use; assuming another bridge owns it and exiting`);
+  } else {
+    log(`server error: ${error && error.message ? error.message : error}`);
+  }
+  process.exit(1);
+});
+
 server.listen(PORT, '127.0.0.1', () => {
   log(`Krynara Telegram bridge listening on http://127.0.0.1:${PORT}`);
   void initialise();
