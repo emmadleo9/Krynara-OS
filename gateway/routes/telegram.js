@@ -7,6 +7,7 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
+const keysRoute = require('./keys');
 
 const TWEB_BRIDGE = 'http://127.0.0.1:2787';
 // The TDLib bridge now lives inside the repo. KRYNARA_TWEB_DIR overrides it for
@@ -29,6 +30,27 @@ async function bridgeHealthy() {
     return false;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+/**
+ * Push the Telegram API credentials the user saved in the console's key store
+ * into the bridge. The bridge prefers its own env/config, but when it was
+ * started by an earlier boot (or reused), only this call can update it.
+ */
+async function syncCredentialsToBridge() {
+  const apiId = keysRoute.getApiKey('TELEGRAM_API_ID');
+  const apiHash = keysRoute.getApiKey('TELEGRAM_API_HASH');
+  if (!apiId || !apiHash) return;
+  try {
+    await fetch(`${TWEB_BRIDGE}/api/telegram/configure`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ apiId, apiHash }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch {
+    /* bridge not reachable yet; it will read env on next boot */
   }
 }
 
