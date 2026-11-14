@@ -3,25 +3,106 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { exec } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createAuth, loadProxyConfig, saveProxyConfig, proxyTypeFor, writeCredentials, readCredentials } from './tdlib-auth.js';
+import { createChats, createMessages } from './tdlib-api.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(__dirname, 'public');
-const PORT = process.env.SOCIALHUB_PORT || process.env.TELEGRAM_BRIDGE_PORT || process.env.PORT || 2786;
+// The gateway and launcher expect 2787. KRYNARA_TWEB_DIR no longer applies:
+// this bridge lives inside the repo.
+const PORT = Number(process.env.SOCIALHUB_PORT || process.env.TELEGRAM_BRIDGE_PORT || process.env.PORT || 2787);
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
-let auth = null;
-let lastAuthState = 'closed';
+
 const sseClients = new Set();
+
+// Built-in public proxies used by /api/telegram/proxy/auto.
+const BUILTIN_PROXIES = [
+  { name: 'Telegram DC1', type: 'mtproto', host: '149.154.167.91', port: 443, secret: '' },
+  { name: 'Telegram DC2', type: 'mtproto', host: '149.154.167.40', port: 443, secret: '' },
+  { name: 'Telegram DC4', type: 'mtproto', host: '149.154.167.51', port: 443, secret: '' },
+  { name: 'Telegram DC5', type: 'mtproto', host: '91.108.56.227', port: 443, secret: '' },
+];
+
+let auth = null;
+let chats = null;
+let messages = null;
+let lastAuthState = 'closed';
+
+/** Apply a saved proxy to a live TDLib client. */
+async function applyProxyToClient(client, config) {
+  const type = proxyTypeFor(config);
+  if (!type || !config.host || !config.port) return false;
+  if (config.enabled === false) {
+    await client.sendAndWait({ '@type': 'disableProxy' }, 10000);
+    return false;
+  }
+  await client.sendAndWait(
+    { '@type': 'enableProxy', enable: true, server: String(config.host), port: Number(config.port), type },
+    15000,
+  );
+  return true;
+}
+
+function statusBody() {
+  if (!auth) {
+    const credentials = readCredentials();
+    return {
+      configured: credentials.configured,
+      authorized: false,
+      connected: false,
+      state: lastAuthState,
+      user: null,
+      proxy: loadProxyConfig(),
+      chats_count: 0,
+    };
+  }
+  const body = auth.statusBody();
+  lastAuthState = body.state;
+  return body;
+}
+
+/** Creates the TDLib client on first use and wires the chat/message helpers. */
 async function boot() {
   if (auth && auth.ready) return auth;
-  throw new Error('Telegram is not connected. Use CONNECT TELEGRAM in the console first.');
+  if (auth && auth.boot) {
+    await auth.boot();
+    if (auth.ready) return auth;
+    throw new Error(`Telegram is not connected. Current state: ${auth.state}. Use CONNECT TELEGRAM in the console first.`);
+  }
+  throw new Error('Telegram bridge is not initialised yet. Retry in a moment.');
 }
-function statusBody() {
-  return { state: auth?.state || 'closed', user: auth?.user || null, proxy: auth?.proxy || null };
+
+async function initialise() {
+  if (auth) return;
+  const { configured } = readCredentials();
+  try {
+    auth = await createAuth({
+      onEvent: (message) => {
+        if (message['@type'] === 'updateAuthorizationState') {
+          const type = message.authorization_state?.['@type'] || 'closed';
+          lastAuthState = type.replace('authorizationState', '').toLowerCase();
+          const payload = JSON.stringify({ kind: 'state', state: lastAuthState, ...statusBody() });
+          for (const res of sseClients) {
+            try {
+              res.write(`data: ${payload}\n\n`);
+            } catch {
+              sseClients.delete(res);
+            }
+          }
+        }
+      },
+    });
+    chats = createChats(auth.client);
+    messages = createMessages(auth.client);
+    console.log(`[tdlib] ready (configured=${configured}, state=${auth.state})`);
+  } catch (error) {
+    console.warn(`[tdlib] initialisation failed: ${error && error.message ? error.message : error}`);
+  }
 }
 
 function slim(m) {
@@ -248,6 +329,20 @@ async function handleApi(req, res, p) {
   // State & Status
   if (p === '/api/state' || p === '/api/telegram/status') {
     return json(res, 200, statusBody());
+  }
+
+  // Configure API credentials at runtime (no restart needed).
+  if (p === '/api/telegram/configure' && req.method === 'POST') {
+    const body = await readBody(req);
+    if (!body.apiId || !body.apiHash) {
+      return json(res, 400, { error: 'apiId and apiHash are required' });
+    }
+    writeCredentials({ apiId: body.apiId, apiHash: body.apiHash });
+    auth = null;
+    chats = null;
+    messages = null;
+    await initialise();
+    return json(res, 200, { ok: true, configured: readCredentials().configured, state: statusBody().state });
   }
 
   // Connect & Auth
@@ -628,5 +723,18 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, '127.0.0.1', () => {
-  log(`Social Hub Telegram web bridge listening on http://127.0.0.1:${PORT}`);
+  log(`Krynara Telegram bridge listening on http://127.0.0.1:${PORT}`);
+  void initialise();
 });
+
+// Release port 2787 on shutdown.
+const shutdown = () => {
+  for (const res of sseClients) {
+    try { res.end(); } catch { /* ignore */ }
+  }
+  sseClients.clear();
+  try { auth?.close?.(); } catch { /* ignore */ }
+  process.exit(0);
+};
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);
