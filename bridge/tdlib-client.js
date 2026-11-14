@@ -41,6 +41,14 @@ export function load() {
   tdReceive = lib.func('str td_receive(double timeout)');
   tdExecute = lib.func('str td_execute(str request)');
 
+  // TDLib defaults to verbosity 5, which logs every td_receive poll
+  // ("Begin to wait for updates...") and floods the console. Errors only.
+  try {
+    tdExecute(JSON.stringify({ '@type': 'setLogVerbosityLevel', new_verbosity_level: 1 }));
+  } catch {
+    /* older TDLib builds may reject it; harmless */
+  }
+
   const info = getTdlibInfo();
   console.log(`[tdlib] loaded ${path.basename(tdjsonPath)} (TDLib ${info.version}, commit ${info.commit})`);
 }
