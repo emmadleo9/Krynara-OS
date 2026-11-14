@@ -383,7 +383,13 @@ async function handleApi(req, res, p) {
   if (p === '/api/logout' || p === '/api/telegram/logout') {
     await boot().catch(() => {});
     if (auth) await auth.logout();
-    return json(res, 200, { ok: true });
+    // The TDLib client is dead after logOut, so rebuild auth + helpers for the
+    // next login instead of reusing a closed client.
+    auth = null;
+    chats = null;
+    messages = null;
+    await initialise();
+    return json(res, 200, { ok: true, state: statusBody().state });
   }
 
   // Chats

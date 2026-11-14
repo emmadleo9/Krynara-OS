@@ -337,6 +337,14 @@ export async function createAuth({ onEvent } = {}) {
       setState('closed');
       user = null;
       chatsCount = 0;
+      // TDLib cannot be reused after logOut: the client is closed and further
+      // requests (including setTdlibParameters) fail with "Request aborted".
+      // Close it so the next boot builds a fresh client.
+      try {
+        client.close();
+      } catch {
+        /* ignore */
+      }
     },
 
     async close() {
