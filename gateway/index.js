@@ -38,6 +38,7 @@ const localAiRoute = require('./routes/local-ai');
 const onlineAiRoute = require('./routes/online-ai');
 const telegramRoute = require('./routes/telegram');
 const storageStatsRoute = require('./routes/storage-stats');
+const mediaCleanup = require('./media-cleanup');
 const native = require('./native/client');
 
 const app = express();
@@ -511,6 +512,7 @@ const startGateway = () => {
   log(`API Keys loaded: nvidia ${Boolean(keysRoute.getApiKey('NV_API_KEY'))}, openrouter ${Boolean(keysRoute.getApiKey('OPENROUTER_API_KEY'))}, tavily ${Boolean(keysRoute.getApiKey('TAVILY_API_KEY'))}`);
   serverRef = server.listen(port, '127.0.0.1', () => log(`KRYNARA local gateway listening on http://127.0.0.1:${port}`));
   whatsapp.attachKrynaraWhatsAppWs(serverRef);
+  mediaCleanup.startMediaCleanup();
   serverRef.on('error', (error) => {
     log(`gateway startup failed: ${error.message}`);
     process.exitCode = 1;
