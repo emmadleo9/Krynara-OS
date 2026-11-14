@@ -181,8 +181,9 @@ export async function createAuth({ onEvent } = {}) {
       const currentType = current?.authorization_state?.['@type'];
 
       if (!current || currentType === 'authorizationStateWaitTdlibParameters') {
+        console.log(`[tdlib] initialising with api_id=${apiId} (hash length ${String(apiHash).length}), db=${DB_DIR}`);
         try {
-          await client.sendAndWait({
+          const paramsResult = await client.sendAndWait({
             '@type': 'setTdlibParameters',
             use_test_dc: false,
             database_directory: DB_DIR,
@@ -195,6 +196,7 @@ export async function createAuth({ onEvent } = {}) {
             device_model: 'Krynara-OS',
             application_version: '1.0.0',
           }, 30000);
+          console.log(`[tdlib] setTdlibParameters -> ${JSON.stringify(paramsResult)}`);
         } catch (error) {
           // Do not mask this: a rejected api_id leaves TDLib stuck at
           // waitTdlibParameters, and reporting 'closed' hides the real cause.
