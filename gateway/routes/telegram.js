@@ -16,39 +16,94 @@ const TWEB_DIR = process.env.KRYNARA_TWEB_DIR
 
 let bridgeSpawning = false;
 let bridgeSpawned = false;
+let bridgeChild = null;
 
+async function bridgeHealthy() {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 1500);
+  try {
+    const res = await fetch(`${TWEB_BRIDGE}/api/state`, { signal: controller.signal });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Start the bridge if nothing is already serving 2787.
+ *
+ * This is the single owner of the bridge process. It must be tolerant of a
+ * bridge that already exists (started by an earlier boot, a manual run, or an
+ * orphan holding the port) — otherwise the spawn fails with EADDRINUSE and the
+ * loser of the race crashes.
+ */
 function ensureBridge() {
   if (bridgeSpawned || bridgeSpawning) return;
   bridgeSpawning = true;
-  try {
-    const scriptPath = path.join(TWEB_DIR, 'socialhub-server.js');
-    if (!fs.existsSync(scriptPath)) {
-      console.warn('[telegram] bridge script not found at', TWEB_DIR);
-      bridgeSpawning = false;
-      return;
+  void (async () => {
+    try {
+      if (await bridgeHealthy()) {
+        bridgeSpawned = true;
+        console.log('[telegram] bridge already healthy on port 2787; reusing it.');
+        return;
+      }
+      const scriptPath = path.join(TWEB_DIR, 'socialhub-server.js');
+      if (!fs.existsSync(scriptPath)) {
+        console.warn('[telegram] bridge script not found at', TWEB_DIR);
+        return;
+      }
+      const child = spawn(process.execPath, ['socialhub-server.js'], {
+        cwd: TWEB_DIR,
+        windowsHide: true,
+        detached: false,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, PORT: '2787' },
+      });
+      bridgeChild = child;
+
+      child.stdout.on('data', (d) => process.stdout.write(`[tweb] ${d}`));
+      child.stderr.on('data', (d) => process.stderr.write(`[tweb] ${d}`));
+
+      // Without this handler a spawn failure (e.g. EADDRINUSE if something
+      // grabbed 2787 between the probe and the spawn) becomes an uncaught
+      // exception that takes the gateway down.
+      child.on('error', (error) => {
+        console.warn(`[telegram] bridge spawn failed: ${error && error.message ? error.message : error}`);
+        bridgeChild = null;
+        bridgeSpawned = false;
+      });
+
+      child.on('exit', (code) => {
+        if (bridgeChild === child) {
+          console.warn(`[telegram] bridge exited (${code}); will retry on next request.`);
+          bridgeChild = null;
+          bridgeSpawned = false;
+        }
+      });
+
+      bridgeSpawned = true;
+      console.log('[telegram] TDLib bridge auto-started on port 2787.');
+    } catch (err) {
+      console.warn('[telegram] bridge auto-start failed:', err && err.message ? err.message : err);
+    } finally {
+      setTimeout(() => { bridgeSpawning = false; }, 3000);
     }
-    const child = spawn(process.execPath, ['socialhub-server.js'], {
-      cwd: TWEB_DIR,
-      windowsHide: true,
-      detached: false,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, PORT: '2787' },
-    });
+  })();
+}
 
-    child.stdout.on('data', (d) => process.stdout.write(`[tweb] ${d}`));
-    child.stderr.on('data', (d) => process.stderr.write(`[tweb] ${d}`));
-    child.on('exit', (code) => {
-      console.warn(`[telegram] bridge exited (${code}); ready to respawn if requested.`);
-      bridgeSpawned = false;
-    });
-
-    bridgeSpawned = true;
-    console.log('[telegram] TDLib bridge auto-started on port 2787.');
-  } catch (err) {
-    console.warn('[telegram] bridge auto-start failed:', err && err.message ? err.message : err);
-  } finally {
-    setTimeout(() => { bridgeSpawning = false; }, 3000);
+/** Kill the bridge child on gateway shutdown so port 2787 is released. */
+function stopBridge() {
+  if (bridgeChild) {
+    try {
+      bridgeChild.kill();
+    } catch {
+      /* already gone */
+    }
+    bridgeChild = null;
   }
+  bridgeSpawned = false;
 }
 
 // Auto-start the bridge at gateway boot
@@ -90,6 +145,7 @@ async function forward(subPath, init) {
 }
 
 module.exports = {
+  stopBridge,
   register(app) {
     // Single source of truth for Telegram status
     app.get('/api/telegram/status', async (_req, res) => {

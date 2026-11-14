@@ -34,8 +34,6 @@ const gatewayHealthUrl = `http://127.0.0.1:${gatewayPort}/api/health`;
 const consoleHealthUrl = `http://127.0.0.1:${consolePort}/api/health`;
 const ollamaBaseUrl = process.env.KRYNARA_OLLAMA_URL || 'http://127.0.0.1:11434';
 const ollamaHealthUrl = new URL('/api/tags', ollamaBaseUrl).toString();
-const twebDir = path.join(root, 'scripts');
-const twebBridgeHealthUrl = 'http://127.0.0.1:2787/api/state';
 const children = new Set();
 let stopping = false;
 let coordinatorLock;
@@ -326,25 +324,10 @@ async function main() {
     await waitForHealth(gatewayHealthUrl, 'KRYNARA local gateway', gateway, '/api/whatsapp/status');
   }
 
-  // Start the Telegram bridge (port 2787) as soon as the gateway is up so TDLib is
-  // ready when the user clicks CONNECT TELEGRAM — no more "bridge offline" delay.
-  // Only start the bridge if the gateway is actually healthy (ours or an existing one).
-  let twebBridge;
-  if (await getHealth(gatewayHealthUrl, '/api/whatsapp/status') && !(await getHealth(twebBridgeHealthUrl))) {
-    if (fs.existsSync(path.join(twebDir, 'socialhub-server.js'))) {
-      twebBridge = startChild(
-        'TelegramBridge',
-        process.execPath,
-        ['socialhub-server.js'],
-        twebDir,
-        { ...process.env, PORT: '2787' },
-      );
-      await waitForEndpoint(twebBridgeHealthUrl, 'Telegram bridge', twebBridge, 60_000);
-      console.log('[Krynara-OS] Telegram bridge is ready on http://127.0.0.1:2787.');
-    } else {
-      console.warn(`[Krynara-OS] Telegram bridge script not found at ${twebDir}; Telegram will be unavailable.`);
-    }
-  }
+  // The Telegram bridge is owned by the gateway (see gateway/routes/telegram.js).
+  // Starting it here as well raced for port 2787 and made the loser die with
+  // EADDRINUSE, which then failed the whole OS boot. The gateway probes the
+  // port first and tolerates an existing bridge, so it is the single owner.
 
   if (!(await getHealth(consoleHealthUrl))) {
     const viteEntry = path.join(consoleDir, 'node_modules', 'vite', 'bin', 'vite.js');

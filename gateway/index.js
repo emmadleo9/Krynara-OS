@@ -528,6 +528,7 @@ const shutdown = (signal) => {
   shuttingDown = true;
   log(`received ${signal}; shutting down`);
   try { native.stop(); } catch { /* best effort */ }
+  try { telegramRoute.stopBridge(); } catch { /* best effort */ }
   try { if (serverRef) serverRef.close(); } catch { /* best effort */ }
   // Give the OS a moment to release sockets before exit.
   setTimeout(() => process.exit(0), 500).unref?.();
