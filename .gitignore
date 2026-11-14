@@ -46,3 +46,7 @@ build/
 # runtime log files (may contain secrets like bot tokens)
 *.log
 !*.log.example
+
+# Telegram bridge runtime state and credentials (never commit)
+bridge/data/
+bridge/telegram.json

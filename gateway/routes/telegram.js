@@ -9,10 +9,11 @@ const path = require('node:path');
 const { spawn } = require('node:child_process');
 
 const TWEB_BRIDGE = 'http://127.0.0.1:2787';
-// The TDLib bridge lives outside this repo. KRYNARA_TWEB_DIR overrides it.
+// The TDLib bridge now lives inside the repo. KRYNARA_TWEB_DIR overrides it for
+// a custom deployment, but the default must not depend on an external path.
 const TWEB_DIR = process.env.KRYNARA_TWEB_DIR
   ? path.resolve(process.env.KRYNARA_TWEB_DIR)
-  : 'D:\\Refrences and Codes\\tweb';
+  : path.resolve(__dirname, '..', '..', 'bridge');
 
 let bridgeSpawning = false;
 let bridgeSpawned = false;
@@ -160,6 +161,15 @@ module.exports = {
         chats_count: body.chats_count ?? 0,
         bridgeOnline: status === 200,
       });
+    });
+
+    app.post('/api/telegram/configure', async (req, res) => {
+      const r = await forward('/api/telegram/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiId: req.body?.apiId ?? req.body?.api_id, apiHash: req.body?.apiHash ?? req.body?.api_hash }),
+      });
+      res.status(r.status).json(r.body);
     });
 
     app.post('/api/telegram/connect', async (_req, res) => {
